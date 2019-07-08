@@ -1,0 +1,6 @@
+{
+  "Version": "v1",
+  "Debug": true,
+  "Resource": "@extend:resource.json",
+  "CdnUrl": "http://cdn.mingrivc.com/images"
+}

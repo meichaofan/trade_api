@@ -1,0 +1,14 @@
+{
+  "Kafka": {
+    "base": {
+      "Host": "cx-dev2:9092"
+    }
+  },
+  "Redis": {
+    "base": {
+      "Host": "cx-dev1",
+      "Port": 6379,
+      "Db": "1"
+    }
+  }
+}

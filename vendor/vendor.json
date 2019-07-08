@@ -1,0 +1,388 @@
+{
+	"comment": "",
+	"ignore": "",
+	"package": [
+		{
+			"checksumSHA1": "+RNYeqVmWRsKi1FB+/bml92qYkE=",
+			"path": "github.com/Akagi201/coincheckgo",
+			"revision": "7690f21ea6161688f425419836efaf2e6eac49ac",
+			"revisionTime": "2017-09-19T03:51:28Z"
+		},
+		{
+			"checksumSHA1": "OGLMcO07u3xRYm7uXquBcbbzLUY=",
+			"path": "github.com/Akagi201/cryptotrader/allcoin",
+			"revision": "d924850de47845bca254a87803782b20bf056d57",
+			"revisionTime": "2018-03-08T02:45:59Z"
+		},
+		{
+			"checksumSHA1": "z2e9NP2A6r3eSefj2bXuJ1hdNWM=",
+			"path": "github.com/Akagi201/cryptotrader/bigone",
+			"revision": "d924850de47845bca254a87803782b20bf056d57",
+			"revisionTime": "2018-03-08T02:45:59Z"
+		},
+		{
+			"checksumSHA1": "us/5roi6oeDtYC6m18NT8yoPu8E=",
+			"path": "github.com/Akagi201/cryptotrader/binance",
+			"revision": "d924850de47845bca254a87803782b20bf056d57",
+			"revisionTime": "2018-03-08T02:45:59Z"
+		},
+		{
+			"checksumSHA1": "z2SO1y/PrgHLvqeaf2DowvAXd4s=",
+			"path": "github.com/Akagi201/cryptotrader/bitfinex",
+			"revision": "d924850de47845bca254a87803782b20bf056d57",
+			"revisionTime": "2018-03-08T02:45:59Z"
+		},
+		{
+			"checksumSHA1": "WlNjA3hVEzeXdgnDiYlDxITmsls=",
+			"path": "github.com/Akagi201/cryptotrader/bitflyer",
+			"revision": "d924850de47845bca254a87803782b20bf056d57",
+			"revisionTime": "2018-03-08T02:45:59Z"
+		},
+		{
+			"checksumSHA1": "hV/Y/+N1DYtv+OcVWJxFi/KOZ9A=",
+			"path": "github.com/Akagi201/cryptotrader/bittrex",
+			"revision": "d924850de47845bca254a87803782b20bf056d57",
+			"revisionTime": "2018-03-08T02:45:59Z"
+		},
+		{
+			"checksumSHA1": "yJ+bnxDgtxwcM78Ok3ph6DilEFE=",
+			"path": "github.com/Akagi201/cryptotrader/cex",
+			"revision": "d924850de47845bca254a87803782b20bf056d57",
+			"revisionTime": "2018-03-08T02:45:59Z"
+		},
+		{
+			"checksumSHA1": "IEUgI+W2+UvfO2TV1fFmJeK+XII=",
+			"path": "github.com/Akagi201/cryptotrader/coincheck",
+			"revision": "d924850de47845bca254a87803782b20bf056d57",
+			"revisionTime": "2018-03-08T02:45:59Z"
+		},
+		{
+			"checksumSHA1": "KlMf9MT2z3Kbx20cRfXO6KD4e7s=",
+			"path": "github.com/Akagi201/cryptotrader/coinegg",
+			"revision": "d924850de47845bca254a87803782b20bf056d57",
+			"revisionTime": "2018-03-08T02:45:59Z"
+		},
+		{
+			"checksumSHA1": "pLJKrZ8Sl35a/58A6ZsXlUbMzW8=",
+			"path": "github.com/Akagi201/cryptotrader/gateio",
+			"revision": "d924850de47845bca254a87803782b20bf056d57",
+			"revisionTime": "2018-03-08T02:45:59Z"
+		},
+		{
+			"checksumSHA1": "xnxuHmh0moUHDR3OjpKfKvA5cHg=",
+			"path": "github.com/Akagi201/cryptotrader/huobi",
+			"revision": "d924850de47845bca254a87803782b20bf056d57",
+			"revisionTime": "2018-03-08T02:45:59Z"
+		},
+		{
+			"checksumSHA1": "ed+Wb5x2Kn8Vnurhc0HPY0w9+0g=",
+			"path": "github.com/Akagi201/cryptotrader/lbank",
+			"revision": "d924850de47845bca254a87803782b20bf056d57",
+			"revisionTime": "2018-03-08T02:45:59Z"
+		},
+		{
+			"checksumSHA1": "GX7vYyqdVGK76jmyqUpe5qViTn4=",
+			"path": "github.com/Akagi201/cryptotrader/liqui",
+			"revision": "d924850de47845bca254a87803782b20bf056d57",
+			"revisionTime": "2018-03-08T02:45:59Z"
+		},
+		{
+			"checksumSHA1": "/9BC5pmXJBxzAsqnZM1x1pUxCYg=",
+			"path": "github.com/Akagi201/cryptotrader/model",
+			"revision": "d924850de47845bca254a87803782b20bf056d57",
+			"revisionTime": "2018-03-08T02:45:59Z"
+		},
+		{
+			"checksumSHA1": "CMcvCBRGDkmce7yHOATeSCBYSfg=",
+			"path": "github.com/Akagi201/cryptotrader/okcoin",
+			"revision": "d924850de47845bca254a87803782b20bf056d57",
+			"revisionTime": "2018-03-08T02:45:59Z"
+		},
+		{
+			"checksumSHA1": "PRhjf0MIpSkcoDfl9xCIgtFV7/4=",
+			"path": "github.com/Akagi201/cryptotrader/okex",
+			"revision": "d924850de47845bca254a87803782b20bf056d57",
+			"revisionTime": "2018-03-08T02:45:59Z"
+		},
+		{
+			"checksumSHA1": "dtTQdzOeUC+dQ+x66sCvICov0Ek=",
+			"path": "github.com/Akagi201/cryptotrader/poloniex",
+			"revision": "d924850de47845bca254a87803782b20bf056d57",
+			"revisionTime": "2018-03-08T02:45:59Z"
+		},
+		{
+			"checksumSHA1": "RaZSRkTTgm6tNg43AxDpuz/7HDo=",
+			"path": "github.com/Akagi201/cryptotrader/zb",
+			"revision": "d924850de47845bca254a87803782b20bf056d57",
+			"revisionTime": "2018-03-08T02:45:59Z"
+		},
+		{
+			"checksumSHA1": "qTvAmxnDMm+sbnxNyGaOr53vElc=",
+			"path": "github.com/Akagi201/utilgo/enums",
+			"revision": "9581262f7c56f4967bf14c161fc59a53db39ead5",
+			"revisionTime": "2018-01-11T03:00:47Z"
+		},
+		{
+			"checksumSHA1": "tAxIIQAYwr5K6TsVx1Mb8uQy1ag=",
+			"path": "github.com/Akagi201/utilgo/signs",
+			"revision": "9581262f7c56f4967bf14c161fc59a53db39ead5",
+			"revisionTime": "2018-01-11T03:00:47Z"
+		},
+		{
+			"checksumSHA1": "QgcegJpPKjqvR95m55DZqlBhHRc=",
+			"path": "github.com/bitfinexcom/bitfinex-api-go/utils",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "MxPAHY1DU1voXI9Kg9WrqtWDQcE=",
+			"path": "github.com/bitfinexcom/bitfinex-api-go/v1",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "rJxTSIbLdyDbaaq4c2Kprb4RxZY=",
+			"path": "github.com/golang-plus/errors",
+			"revision": "ba223c001a0652d97128ab4f47efee9d7529560b",
+			"revisionTime": "2017-06-10T18:33:08Z"
+		},
+		{
+			"checksumSHA1": "FpzcPY0qI09F0pb9uNfyQDcc/xM=",
+			"path": "github.com/golang-plus/uuid",
+			"revision": "abc8f6f4d9f8ee48848030dba1eb233bc8b4c4fe",
+			"revisionTime": "2017-06-10T18:27:40Z"
+		},
+		{
+			"checksumSHA1": "UCMWQKKpTvJ9bt8P2IS1CDAoKv4=",
+			"path": "github.com/golang-plus/uuid/internal",
+			"revision": "abc8f6f4d9f8ee48848030dba1eb233bc8b4c4fe",
+			"revisionTime": "2017-06-10T18:27:40Z"
+		},
+		{
+			"checksumSHA1": "4bXRU+ZLWPBYnveO3eHgLhLg3uI=",
+			"path": "github.com/golang-plus/uuid/internal/dcesecurity",
+			"revision": "abc8f6f4d9f8ee48848030dba1eb233bc8b4c4fe",
+			"revisionTime": "2017-06-10T18:27:40Z"
+		},
+		{
+			"checksumSHA1": "VdwcIaUxQ7GL/Uo9tVwgStTfABA=",
+			"path": "github.com/golang-plus/uuid/internal/namebased",
+			"revision": "abc8f6f4d9f8ee48848030dba1eb233bc8b4c4fe",
+			"revisionTime": "2017-06-10T18:27:40Z"
+		},
+		{
+			"checksumSHA1": "2tYnExBqbwbXAqsYRf7CCYc/T1o=",
+			"path": "github.com/golang-plus/uuid/internal/namebased/md5",
+			"revision": "abc8f6f4d9f8ee48848030dba1eb233bc8b4c4fe",
+			"revisionTime": "2017-06-10T18:27:40Z"
+		},
+		{
+			"checksumSHA1": "N4uXlGT6mXFRcdvzQXFs8PorXSA=",
+			"path": "github.com/golang-plus/uuid/internal/namebased/sha1",
+			"revision": "abc8f6f4d9f8ee48848030dba1eb233bc8b4c4fe",
+			"revisionTime": "2017-06-10T18:27:40Z"
+		},
+		{
+			"checksumSHA1": "vzjthpoTvTEk0w9S3cNIlZL8Ue4=",
+			"path": "github.com/golang-plus/uuid/internal/random",
+			"revision": "abc8f6f4d9f8ee48848030dba1eb233bc8b4c4fe",
+			"revisionTime": "2017-06-10T18:27:40Z"
+		},
+		{
+			"checksumSHA1": "P4xMbczqeobxI4SF4ghbnEX8CFg=",
+			"path": "github.com/golang-plus/uuid/internal/timebased",
+			"revision": "abc8f6f4d9f8ee48848030dba1eb233bc8b4c4fe",
+			"revisionTime": "2017-06-10T18:27:40Z"
+		},
+		{
+			"checksumSHA1": "2mDtau4exHCqVrfTw1reySXta14=",
+			"path": "github.com/gorilla/websocket",
+			"revision": "eb925808374e5ca90c83401a40d711dc08c0c0f6",
+			"revisionTime": "2018-03-06T18:15:48Z"
+		},
+		{
+			"checksumSHA1": "oycZajC/yBkGo82rIZ/6U456tCI=",
+			"path": "github.com/pkg/errors",
+			"revision": "30136e27e2ac8d167177e8a583aa4c3fea5be833",
+			"revisionTime": "2018-01-27T01:58:12Z"
+		},
+		{
+			"checksumSHA1": "mlf/y9xYJL8Za1RETmLtcHMPDgY=",
+			"path": "github.com/spf13/cast",
+			"revision": "8965335b8c7107321228e3e3702cab9832751bac",
+			"revisionTime": "2018-02-14T17:35:30Z"
+		},
+		{
+			"checksumSHA1": "lI5ERE4OXslvCXTuuPYlm25Hw/0=",
+			"path": "github.com/tidwall/gjson",
+			"revision": "9ed3f8e1a5d67a79157423b8d6f448d42b907f36",
+			"revisionTime": "2018-03-01T18:15:57Z"
+		},
+		{
+			"checksumSHA1": "cMY40FS2Go4zt882rvcyy9DjLdk=",
+			"path": "github.com/tidwall/match",
+			"revision": "1731857f09b1f38450e2c12409748407822dc6be",
+			"revisionTime": "2017-10-02T07:59:45Z"
+		},
+		{
+			"checksumSHA1": "eidrIg1UDd8OxiZjvW2WhUTCdM4=",
+			"path": "github.com/tidwall/sjson",
+			"revision": "6a22caf2fd45d5e2119bfc3717e984f15a7eb7ee",
+			"revisionTime": "2016-12-12T16:53:56Z"
+		},
+		{
+			"checksumSHA1": "Csl3lrkis5iUo5In4BltnOc0hS4=",
+			"path": "golang.org/x/crypto/ssh/terminal",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "Y+HGqEkYM15ir+J93MEaHdyFy0c=",
+			"path": "golang.org/x/net/context",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "vqc3a+oTUGX8PmD0TS+qQ7gmN8I=",
+			"path": "golang.org/x/net/html",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "z79z5msRzgU48FCZxSuxfU8b4rs=",
+			"path": "golang.org/x/net/html/atom",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "cdT+oqPhYKGf3r+HkPo51IauZnA=",
+			"path": "golang.org/x/net/http2",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "kyClpesDqa6LA7CFPGgKrX9NKkA=",
+			"path": "golang.org/x/net/http2/hpack",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "GIGmSrYACByf5JDIP9ByBZksY80=",
+			"path": "golang.org/x/net/idna",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "UxahDzW2v4mf/+aFxruuupaoIwo=",
+			"path": "golang.org/x/net/internal/timeseries",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "3xyuaSNmClqG4YWC7g0isQIbUTc=",
+			"path": "golang.org/x/net/lex/httplex",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "GQHKESPeCcAsnerZPtHadvKUIzs=",
+			"path": "golang.org/x/net/trace",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "DL86dD0CNBnjMxK1FuWRO+2gAHI=",
+			"path": "golang.org/x/sys/unix",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "AvVpgwhxhJgjoSledwDtYrEKVE4=",
+			"path": "google.golang.org/genproto/googleapis/rpc/status",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "alYroN0n+3NDlMXZeiC6d/LG764=",
+			"path": "google.golang.org/grpc",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "/eTpFgjvMq5Bc9hYnw5fzKG4B6I=",
+			"path": "google.golang.org/grpc/codes",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "5ylThBvJnIcyWhL17AC9+Sdbw2E=",
+			"path": "google.golang.org/grpc/credentials",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "2NbY9kmMweE4VUsruRsvmViVnNg=",
+			"path": "google.golang.org/grpc/grpclb/grpc_lb_v1",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "+OUZtnh06yy+Y8YowXWs7p//Jb4=",
+			"path": "google.golang.org/grpc/grpclog",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "U9vDe05/tQrvFBojOQX8Xk12W9I=",
+			"path": "google.golang.org/grpc/internal",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "hcuHgKp8W0wIzoCnNfKI8NUss5o=",
+			"path": "google.golang.org/grpc/keepalive",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "HH3h5npBG+wwoxWeyVjIpxnloxQ=",
+			"path": "google.golang.org/grpc/metadata",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "Zzb7Xsc3tbTJzrcZbSPyye+yxmw=",
+			"path": "google.golang.org/grpc/naming",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "n5EgDdBqFMa2KQFhtl+FF/4gIFo=",
+			"path": "google.golang.org/grpc/peer",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "ZY8Tq61fGK1stTuvwK5WoqcU8j8=",
+			"path": "google.golang.org/grpc/stats",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "DIv9qbApAoh2cF2G3Br24lVPqUI=",
+			"path": "google.golang.org/grpc/status",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "aixGx/Kd0cj9ZlZHacpHe3XgMQ4=",
+			"path": "google.golang.org/grpc/tap",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "kiuUWkybhtbL9m3a5Mar2sPACnw=",
+			"path": "google.golang.org/grpc/transport",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "P/k5ZGf0lEBgpKgkwy++F7K1PSg=",
+			"path": "gopkg.in/go-playground/validator.v8",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "RDJpJQwkF012L6m/2BJizyOksNw=",
+			"path": "gopkg.in/yaml.v2",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "3vfx0/1yBBjhBZaGulBY98w2Rso=",
+			"path": "truxing/commons/conf",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "dOAFLUjZsfnaZWvFRgUrqK7wOvE=",
+			"path": "truxing/commons/log",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "mi3VprjcV1jbcNtsveuxNSPtfFA=",
+			"path": "truxing/commons/utils",
+			"revision": ""
+		}
+	],
+	"rootPath": "btc_api"
+}

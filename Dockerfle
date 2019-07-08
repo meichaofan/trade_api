@@ -1,0 +1,10 @@
+FROM golang:1.10
+
+ADD . /go/src/trade_api
+WORKDIR /go/src/trade_api
+
+RUN echo "Asia/Shanghai" > /etc/timezone && go build -o trade_api ./src/main/web/server.go
+
+EXPOSE 45433
+CMD ["-mode","dev"]
+ENTRYPOINT ["./trade_api"]
