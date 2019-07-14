@@ -210,3 +210,7 @@ func (ca *CoinAll) GetDepth(base, quote string) (model.OrderBook, error) {
 	log.Debugf("%v", orderBook)
 	return orderBook, nil
 }
+
+/**
+https://www.coinall.live/docs/zh/#spot-all
+ */

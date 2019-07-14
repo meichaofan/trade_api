@@ -8,15 +8,18 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 	"truxing/commons/log"
 )
 
 /**
 文档
+https://github.com/Biboxcom/API_Docs/wiki
 */
 
 const (
 	RestHost = "https://api.bibox365.com/v1/mdata"
+	PlatForm = "bibox"
 )
 
 //定义taker的成交方向
@@ -114,8 +117,8 @@ func (bb *BitBox) GetTades(base, quote string, size int) ([]model.Trade, error) 
 			Price:     value.Get("price").Float(),
 			Type:      sideMap[value.Get("side").String()],
 			Raw:       value.String(),
-			TradeTime: value.Get("time").Int()/1000,
-			Time:      cast.ToTime(value.Get("time").Int()/1000),
+			TradeTime: value.Get("time").Int() / 1000,
+			Time:      cast.ToTime(value.Get("time").Int() / 1000),
 		}
 		trades = append(trades, trade)
 		return true
@@ -197,4 +200,69 @@ func (bb *BitBox) GetMarkets() ([]model.MarketPairInfo, error) {
 		return true
 	})
 	return tradePairs, nil
+}
+
+/**
+交易所所有交易对及其价格
+*/
+func (bb *BitBox) GetExchangeTickers() (model.ExchangeTickers, error) {
+	var exchangeTickers model.ExchangeTickers
+	url := RestHost + "?cmd=marketAll"
+	log.Debugf("url: %s", url)
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	log.Debugf("Response body: %v", string(body))
+	gjson.ParseBytes(body).Get("result").ForEach(func(key, value gjson.Result) bool {
+
+		marketPair := model.MarketPairInfo{
+			Base:  value.Get("currency_symbol").String(),
+			Quote: value.Get("coin_symbol").String(),
+		}
+
+		exchangeTicker := &model.ExchangeTicker{
+			MarketPair:         marketPair,
+			Vol:                value.Get("vol24H").Float(),
+			Amount:             value.Get("amount").Float(),
+			Last:               value.Get("Last").Float(),
+			LastUSD:            value.Get("last_usd").Float(),
+			PriceChangePercent: value.Get("percent").Float(),
+			Time:               time.Now(),
+		}
+
+		exchangeTickers = append(exchangeTickers, exchangeTicker)
+		return true
+	})
+	return exchangeTickers, nil
+}
+
+/**
+获取当前平台所有交易额
+*/
+func (bb *BitBox) GetExchangeAmount() (model.ExchangeAmount, error) {
+	var exchangeAmount model.ExchangeAmount
+	url := RestHost + "?cmd=marketAll"
+	log.Debugf("url: %s", url)
+	resp, err := http.Get(url)
+	if err != nil {
+		return exchangeAmount, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return exchangeAmount, err
+	}
+	log.Debugf("Response body: %v", string(body))
+	gjson.ParseBytes(body).Get("result").ForEach(func(key, value gjson.Result) bool {
+		exchangeAmount.AmountUSD += value.Get("amount").Float()
+		return true
+	})
+	exchangeAmount.PlatForm = PlatForm
+	return exchangeAmount, nil
 }

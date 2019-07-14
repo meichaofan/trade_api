@@ -18,6 +18,26 @@ type Ticker struct {
 	ExchargeBit          float64 `json:"ExchangeBit"`
 }
 
+type ExchangeTickers []*ExchangeTicker;
+
+// 交易所不同脚交易对行情
+type ExchangeTicker struct {
+	MarketPair MarketPairInfo  //交易对
+	Vol                float64 // 成交量
+	Amount             float64 // 成交额
+	Last               float64 // 最新价格
+	LastUSD            float64 // 最新价格折换成美元
+	PriceChangePercent float64 //涨跌幅
+	Time               time.Time
+	//Raw                string  // original info
+}
+
+// 平台交易额
+type ExchangeAmount struct {
+	PlatForm  string
+	AmountUSD float64
+}
+
 type SimpleTicker struct {
 	Price  float64
 	Symbol string

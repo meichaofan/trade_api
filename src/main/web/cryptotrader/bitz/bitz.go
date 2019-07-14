@@ -204,3 +204,6 @@ func (bz *BitZ) GetMarkets() ([]model.MarketPairInfo, error) {
 	}
 	return tradePairs, nil
 }
+/**
+https://apidoc.bitz.top/cn/market-quotation-data/Get-the-tickerall.html
+ */

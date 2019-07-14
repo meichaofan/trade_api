@@ -3,7 +3,13 @@ package web
 import (
 	"context"
 	"net/http"
+	"trade_api/src/main/web/cryptotrader/bibox"
+	"trade_api/src/main/web/cryptotrader/biki"
+	"trade_api/src/main/web/cryptotrader/bitfinex"
+	"trade_api/src/main/web/cryptotrader/bitz"
 	coinall2 "trade_api/src/main/web/cryptotrader/coinall"
+	"trade_api/src/main/web/cryptotrader/coinbene"
+	"trade_api/src/main/web/cryptotrader/cointiger"
 	"truxing/commons/log"
 
 	"github.com/Akagi201/cryptotrader/binance"
@@ -147,6 +153,24 @@ func ZbTradeapi(base, quote, typ, acckey, secret string, since, size int, platfo
 	case "coinall":
 		api := coinall2.New(acckey,secret)
 		trades, err = api.GetTades(base, quote, int(since))
+	case "bibox":
+		api := bibox.New("", "")
+		trades, err = api.GetTades(base, quote, size)
+	case "biki":
+		api := biki.New("", "")
+		trades, err = api.GetTades(base, quote)
+	case "bitz":
+		api := bitz.New("", "")
+		trades, err = api.GetTades(base, quote)
+	case "coinbene":
+		api := coinbene.New("", "")
+		trades, err = api.GetTades(base, quote, size)
+	case "cointiger":
+		api := cointiger.New("", "")
+		trades, err = api.GetTades(base, quote, size)
+	case "bitfinex":
+		api := bitfinex.New("", "")
+		trades, err = api.GetTades(base, quote, size)
 	default:
 		trades = []model.Trade{}
 		err = nil
@@ -196,6 +220,24 @@ func ZbOrderBook(base, quote, typ, acckey, secret string, since, size int, platf
 	case "coinall":
 		api := coinall2.New(acckey, secret)
 		trades, err = api.GetDepth(base, quote)
+	case "bibox":
+		api := bibox.New("","")
+		trades, err = api.GetMarketDepth(base, quote, size)
+	case "biki":
+		api := biki.New("","")
+		trades, err = api.GetMarketDepth(base, quote, "step0")
+	case "bitz":
+		api := bitz.New("","")
+		trades, err = api.GetOrderBook(base, quote)
+	case "coinbene":
+		api := coinbene.New("","")
+		trades, err = api.GetOrderBook(base, quote,size)
+	case "cointiger":
+		api := cointiger.New("", "")
+		trades, err = api.GetMarketDepth(base, quote, "step0")
+	case "bitfinex":
+		api := bitfinex.New("", "")
+		trades, err = api.GetMarketDepth(base, quote)
 	default:
 		trades = model.OrderBook{}
 		err = nil
@@ -223,7 +265,23 @@ func GetMarketPairInfo(platform string) ([]model.MarketPairInfo, error) {
 	case "coinall":
 		api := coinall2.New("", "")
 		marketpairinfo, err = api.GetMarkets()
+	case "bibox":
+		api := bibox.New("","")
+		marketpairinfo, err = api.GetMarkets()
+	case "biki":
+		api := biki.New("","")
+		marketpairinfo, err = api.GetMarkets()
+	case "bitz":
+		api := bitz.New("","")
+		marketpairinfo, err = api.GetMarkets()
+	case "coinbene":
+		api := coinbene.New("","")
+		marketpairinfo, err = api.GetMarkets()
+	case "cointiger":
+		api := cointiger.New("", "")
+		marketpairinfo, err = api.GetMarkets()
 	default:
+
 		marketpairinfo = []model.MarketPairInfo{}
 		err = nil
 	}

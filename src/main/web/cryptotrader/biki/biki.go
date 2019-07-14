@@ -209,3 +209,4 @@ func (biki *Biki) GetMarkets() ([]model.MarketPairInfo, error) {
 	}
 	return tradePairs, nil
 }
+
