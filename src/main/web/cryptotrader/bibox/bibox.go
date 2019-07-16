@@ -42,7 +42,7 @@ func New(apiKey string, secret string) *BitBox {
 }
 
 func getSymbol(base, quote string) string {
-	return strings.ToUpper(strings.TrimSpace(base)) + "_" + strings.ToUpper(strings.TrimSpace(quote))
+	return strings.ToUpper(strings.TrimSpace(quote)) + "_" + strings.ToUpper(strings.TrimSpace(base))
 }
 
 //pair ETH_BTC
@@ -230,8 +230,9 @@ func (bb *BitBox) GetExchangeTickers() (model.ExchangeTickers, error) {
 			MarketPair:         marketPair,
 			Vol:                value.Get("vol24H").Float(),
 			Amount:             value.Get("amount").Float(),
-			Last:               value.Get("Last").Float(),
+			Last:               value.Get("last").Float(),
 			LastUSD:            value.Get("last_usd").Float(),
+			LastCNY:            value.Get("last_cny").Float(),
 			PriceChangePercent: value.Get("percent").Float(),
 			Time:               time.Now(),
 		}
