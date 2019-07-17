@@ -264,9 +264,7 @@ func _getExchangeTickers(base, quote string, tickerts chan<- *model.ExchangeTick
 		log.Debugf(err)
 	}
 	body, err := ioutil.ReadAll(resp.Body)
-
 	log.Debug("%v", string(body))
-
 	if err != nil {
 		log.Debugf(err)
 	}
@@ -282,7 +280,7 @@ func _getExchangeTickers(base, quote string, tickerts chan<- *model.ExchangeTick
 		Vol:                gjson.ParseBytes(body).Get("data.vol").Float(),  // 成交量
 		Last:               gjson.ParseBytes(body).Get("data.last").Float(), // 最新价格
 		LastUSD:            0,                                               // 最新价格折换成美元
-		PriceChangePercent: gjson.ParseBytes(body).Get("data.rose").Float(), //涨幅                                               //涨跌幅
+		PriceChangePercent: gjson.ParseBytes(body).Get("data.rose").Float(), //涨幅
 		Time:               time.Now(),
 	}
 }
