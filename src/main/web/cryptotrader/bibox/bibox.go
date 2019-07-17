@@ -42,7 +42,7 @@ func New(apiKey string, secret string) *BitBox {
 }
 
 func getSymbol(base, quote string) string {
-	return strings.ToUpper(strings.TrimSpace(base)) + "_" + strings.ToUpper(strings.TrimSpace(quote))
+	return strings.ToUpper(strings.TrimSpace(quote)) + "_" + strings.ToUpper(strings.TrimSpace(base))
 }
 
 //pair ETH_BTC
@@ -230,8 +230,9 @@ func (bb *BitBox) GetExchangeTickers() (model.ExchangeTickers, error) {
 			MarketPair:         marketPair,
 			Vol:                value.Get("vol24H").Float(),
 			Amount:             value.Get("amount").Float(),
-			Last:               value.Get("Last").Float(),
+			Last:               value.Get("last").Float(),
 			LastUSD:            value.Get("last_usd").Float(),
+			LastCNY:            value.Get("last_cny").Float(),
 			PriceChangePercent: value.Get("percent").Float(),
 			Time:               time.Now(),
 		}
@@ -265,4 +266,48 @@ func (bb *BitBox) GetExchangeAmount() (model.ExchangeAmount, error) {
 	})
 	exchangeAmount.PlatForm = PlatForm
 	return exchangeAmount, nil
+}
+
+/**
+获取k线 https://github.com/Biboxcom/API_Docs/wiki/REST_API_Reference#%E6%9F%A5%E8%AF%A2k%E7%BA%BF
+*/
+func (bb *BitBox) GetRecords(base, quote, period string, size int) ([]model.Record, error) {
+	url := RestHost + "?cmd=kline&pair=" + getSymbol(base, quote) + "&period=" + period
+	if size != 0 {
+		url += "&size" + strconv.Itoa(size)
+	}
+	log.Debugf("Request url:%v", url)
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	log.Debugf("Response body: %v", string(body))
+
+	var record model.Record
+	var records []model.Record
+	//2019-07-03T04:00:00.000Z
+	timeLayout := "2006-01-02T15:04:05.000Z" //转化所需模板
+	loc, _ := time.LoadLocation("Local")     //重要：获取时区
+	gjson.ParseBytes(body).Get("result").ForEach(func(key, value gjson.Result) bool {
+		record.Open = value.Get("open").Float()
+		record.High = value.Get("high").Float()
+		record.Low = value.Get("low").Float()
+		record.Close = value.Get("close").Float()
+		record.Vol = value.Get("vol").Float()
+		timeStr := strconv.Itoa(int(value.Get("time").Int() / 1000))
+		theTime, _ := time.ParseInLocation(timeLayout, timeStr, loc) //使用模板在对应时区转化为time.time类型
+		sr := theTime.Unix()                                         //转化为时间戳 类型是int64
+		record.Ktime = sr
+		records = append(records, record)
+		return true // keep iterating
+	})
+
+	return records, nil
 }

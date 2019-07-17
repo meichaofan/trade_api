@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 	"truxing/commons/log"
 )
@@ -19,6 +20,11 @@ https://bikicoin.oss-cn-hangzhou.aliyuncs.com/web_doc/openapi.pdf
 
 const (
 	RestHost = "https://api.biki.com/"
+)
+
+var (
+	// 定义虚拟货币汇率映射表 key: 表示虚拟货币, value是美元
+	exchangeRate sync.Map
 )
 
 // Biki client
@@ -35,7 +41,7 @@ func New(apiKey string, sign string) *Biki {
 }
 
 func getSymbol(base, quote string) string {
-	return strings.ToLower(strings.TrimSpace(base)) + strings.ToLower(strings.TrimSpace(quote))
+	return strings.ToLower(strings.TrimSpace(quote)) + strings.ToLower(strings.TrimSpace(base))
 }
 
 /**
@@ -198,8 +204,8 @@ func (biki *Biki) GetMarkets() ([]model.MarketPairInfo, error) {
 	if gjson.GetBytes(body, "code").Int() == 0 {
 		gjson.ParseBytes(body).Get("data").ForEach(func(key, value gjson.Result) bool {
 			tradePair := model.MarketPairInfo{
-				Base:  value.Get("base_coin").String(),
-				Quote: value.Get("count_coin").String(),
+				Base:  value.Get("count_coin").String(),
+				Quote: value.Get("base_coin").String(),
 			}
 			tradePairs = append(tradePairs, tradePair)
 			return true
@@ -210,3 +216,118 @@ func (biki *Biki) GetMarkets() ([]model.MarketPairInfo, error) {
 	return tradePairs, nil
 }
 
+/**
+交易所所有交易对及其价格
+*/
+func (bk *Biki) GetExchangeTickers() (model.ExchangeTickers, error) {
+	var exchangeTickers model.ExchangeTickers
+	//1.先获取所有交易对
+	pairs, err := bk.GetMarkets()
+	if err != nil {
+		return nil, err
+	}
+	//2. 遍历所有交易对，获取其最新价
+	var waitGroup sync.WaitGroup
+	waitGroup.Add(len(pairs))
+	tickers := make(chan *model.ExchangeTicker, len(pairs))
+
+	for _, pair := range pairs {
+		go func(base, quote string) {
+			_getExchangeTickers(base, quote, tickers)
+			waitGroup.Done()
+		}(pair.Base, pair.Quote)
+	}
+
+	waitGroup.Wait()
+	close(tickers)
+
+	for v := range tickers {
+		//美元
+		if v.MarketPair.Base == "USDT" {
+			v.LastUSD = v.Last
+		} else {
+			if rate, exist := exchangeRate.Load(v.MarketPair.Base); exist == true {
+				r := rate.(float64)
+				v.LastUSD = r * v.Last
+			}
+		}
+		exchangeTickers = append(exchangeTickers, v)
+	}
+	return exchangeTickers, nil
+}
+
+func _getExchangeTickers(base, quote string, tickerts chan<- *model.ExchangeTicker) {
+	url := RestHost + "open/api/get_ticker?symbol=" + getSymbol(base, quote)
+	log.Debugf("url:%s", url)
+	resp, err := http.Get(url)
+	if err != nil {
+		log.Debugf(err)
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+
+	log.Debug("%v", string(body))
+
+	if err != nil {
+		log.Debugf(err)
+	}
+	//基础货币是美元
+	//将虚拟货币汇率加入到exchangeMap中
+	if strings.ToUpper(base) == "USDT" {
+		if _, exist := exchangeRate.Load(strings.ToUpper(quote)); exist == false {
+			exchangeRate.Store(strings.ToUpper(quote), gjson.ParseBytes(body).Get("data.last").Float())
+		}
+	}
+	tickerts <- &model.ExchangeTicker{
+		MarketPair:         model.MarketPairInfo{Base: strings.ToUpper(base), Quote: strings.ToUpper(quote)},
+		Vol:                gjson.ParseBytes(body).Get("data.vol").Float(),  // 成交量
+		Last:               gjson.ParseBytes(body).Get("data.last").Float(), // 最新价格
+		LastUSD:            0,                                               // 最新价格折换成美元
+		PriceChangePercent: gjson.ParseBytes(body).Get("data.rose").Float(), //涨幅                                               //涨跌幅
+		Time:               time.Now(),
+	}
+}
+
+/**
+获取k线
+ */
+func (bk *Biki) GetRecords(base, quote, period string) ([]model.Record, error) {
+	url := RestHost + "open/api/get_records?symbol=" + getSymbol(base, quote) + "&period=" + period
+	log.Debugf("Request url:%v", url)
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	log.Debugf("Response body: %v", string(body))
+
+	var record model.Record
+	var records []model.Record
+	//2019-07-03T04:00:00.000Z
+	timeLayout := "2006-01-02T15:04:05.000Z" //转化所需模板
+	loc, _ := time.LoadLocation("Local")     //重要：获取时区
+	if gjson.GetBytes(body, "code").Int() == 0 {
+		gjson.ParseBytes(body).Get("data").ForEach(func(key, value gjson.Result) bool {
+			record.Open = value.Array()[1].Float()
+			record.High = value.Array()[2].Float()
+			record.Low = value.Array()[3].Float()
+			record.Close = value.Array()[4].Float()
+			record.Vol = value.Array()[5].Float()
+			theTime, _ := time.ParseInLocation(timeLayout, value.Array()[0].Str, loc) //使用模板在对应时区转化为time.time类型
+			sr := theTime.Unix()                                                      //转化为时间戳 类型是int64
+			record.Ktime = sr
+			records = append(records, record)
+			return true // keep iterating
+		})
+	} else {
+		return nil, errors.New(gjson.GetBytes(body, "msg").Str)
+
+	}
+
+	return records, nil
+}

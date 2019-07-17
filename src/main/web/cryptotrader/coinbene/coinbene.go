@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 	"truxing/commons/log"
 )
 
@@ -208,4 +209,52 @@ func (cb *CoinBene) GetMarkets() ([]model.MarketPairInfo, error) {
 		return nil, errors.New(gjson.GetBytes(body, "description").Str)
 	}
 	return tradePairs, nil
+}
+
+/**
+K线
+https://apidoc.bitz.top/cn/market-quotation-data/Get-kline-data.html
+*/
+func (bz *BitZ) GetRecords(base, quote, period string, size int) ([]model.Record, error) {
+	url := RestHost + "/Market/kline?symbol=" + getSymbol(base, quote) + "&resolution=" + period
+	if size != 0 {
+		url += "&size" + strconv.Itoa(size)
+	}
+	log.Debugf("Request url:%v", url)
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	log.Debugf("Response body: %v", string(body))
+
+	var record model.Record
+	var records []model.Record
+	//2019-07-03T04:00:00.000Z
+	timeLayout := "2006-01-02T15:04:05.000Z" //转化所需模板
+	loc, _ := time.LoadLocation("Local")     //重要：获取时区
+	if gjson.GetBytes(body, "status").Int() == 200 {
+		gjson.ParseBytes(body).Get("data.bars").ForEach(func(key, value gjson.Result) bool {
+			record.Open = value.Get("open").Float()
+			record.High = value.Get("high").Float()
+			record.Low = value.Get("low").Float()
+			record.Close = value.Get("close").Float()
+			record.Vol = value.Get("volume").Float()
+			timeStr := strconv.Itoa(int(value.Get("time").Int() / 1000))
+			theTime, _ := time.ParseInLocation(timeLayout, timeStr, loc) //使用模板在对应时区转化为time.time类型
+			sr := theTime.Unix()                                         //转化为时间戳 类型是int64
+			record.Ktime = sr
+			records = append(records, record)
+			return true // keep iterating
+		})
+	}else{
+		return nil, errors.New(gjson.GetBytes(body, "msg").Str)
+	}
+	return records, nil
 }

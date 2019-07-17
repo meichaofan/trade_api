@@ -182,3 +182,4 @@ func (b *Bitfinex) GetMarkets() (interface{}, error) {
 	r := gjson.ParseBytes(body).Value()
 	return r, nil
 }
+

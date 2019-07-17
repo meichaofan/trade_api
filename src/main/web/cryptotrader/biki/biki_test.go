@@ -8,16 +8,16 @@ import (
 
 func TestBiki_GetTicker(t *testing.T) {
 	biki := biki.Biki{}
-	ticker, err := biki.GetTicker("btc", "usdt")
+	ticker, err := biki.GetTicker("usdt", "btc")
 	if err != nil {
 		fmt.Printf("%s", err)
 	}
-	fmt.Printf("%v", ticker)
+	fmt.Printf("last %f ", ticker.Last)
 }
 
 func TestBiki_GetTades(t *testing.T) {
 	biki := biki.Biki{}
-	trades, err := biki.GetTades("btc", "usdt")
+	trades, err := biki.GetTades("usdt", "btc")
 	if err != nil {
 		fmt.Printf("error:%s", err)
 	}
@@ -28,7 +28,7 @@ func TestBiki_GetTades(t *testing.T) {
 
 func TestBiki_GetMarketDepth(t *testing.T) {
 	biki := biki.Biki{}
-	orderBook, err := biki.GetMarketDepth("btc", "usdt","")
+	orderBook, err := biki.GetMarketDepth("usdt", "btc", "")
 	if err != nil {
 		fmt.Printf("error:%s", err)
 	}
@@ -41,6 +41,20 @@ func TestBiki_GetMarkets(t *testing.T) {
 	if err != nil {
 		fmt.Printf("error:%s", err)
 	}
-	fmt.Printf("%v", pair)
-	fmt.Printf("the length is %d", len(pair))
+	for _,v := range pair{
+		fmt.Printf("%s %s", v.Quote,v.Base)
+		fmt.Println()
+	}
+}
+
+func TestBiki_GetExchangeTickers(t *testing.T) {
+	biki := biki.Biki{}
+	tickers, err := biki.GetExchangeTickers()
+	if err!=nil {
+		fmt.Printf("error:%s", err)
+	}
+	for _, v := range tickers {
+		fmt.Printf("quote:%s base:%s last:%f last_usd:%f", v.MarketPair.Quote, v.MarketPair.Base, v.Last, v.LastUSD)
+		fmt.Println()
+	}
 }
