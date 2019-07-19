@@ -4,11 +4,14 @@ import (
 	"github.com/Akagi201/cryptotrader/model"
 	"github.com/spf13/cast"
 	"github.com/tidwall/gjson"
+	"gopkg.in/mgo.v2/bson"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+	"trade_api/src/main/web/cli/common"
+	"trade_api/src/main/web/cli/data"
 	"truxing/commons/log"
 )
 
@@ -20,6 +23,8 @@ https://github.com/Biboxcom/API_Docs/wiki
 const (
 	RestHost = "https://api.bibox365.com/v1/mdata"
 	PlatForm = "bibox"
+	DbPair   = "platform_pair"
+	DbAmount = "platform_amount"
 )
 
 //定义taker的成交方向
@@ -243,7 +248,26 @@ func (bb *BitBox) GetExchangeTickers() (model.ExchangeTickers, error) {
 }
 
 /**
+交易所所有交易对及其价格（从数据库获取）
+完全没问题
+*/
+
+func (bb *BitBox) GetExchangeTickersFromDb() ([]*data.ExchangeTicker, error) {
+	var exchangeTicker []*data.ExchangeTicker
+	s, c := common.Connect(DbPair, "bibox", "local")
+	defer s.Close()
+	err := c.Find(bson.M{}).All(&exchangeTicker)
+	if err != nil {
+		log.Debug("error:%s", err)
+		return nil, err
+	}
+	return exchangeTicker, nil
+}
+
+/**
 获取当前平台所有交易额
+https://github.com/Biboxcom/API_Docs/wiki/REST_API_Reference#%E6%9F%A5%E8%AF%A2%E6%88%90%E4%BA%A4%E8%AE%B0%E5%BD%95
+这个👍
 */
 func (bb *BitBox) GetExchangeAmount() (model.ExchangeAmount, error) {
 	var exchangeAmount model.ExchangeAmount
@@ -260,10 +284,36 @@ func (bb *BitBox) GetExchangeAmount() (model.ExchangeAmount, error) {
 	}
 	log.Debugf("Response body: %v", string(body))
 	gjson.ParseBytes(body).Get("result").ForEach(func(key, value gjson.Result) bool {
-		exchangeAmount.AmountUSD += value.Get("amount").Float()
+		last := value.Get("last").Float()
+		lastUsd := value.Get("last_usd").Float()
+		rate := lastUsd / last
+		exchangeAmount.AmountUSD += value.Get("amount").Float() * rate
 		return true
 	})
 	exchangeAmount.PlatForm = PlatForm
+	return exchangeAmount, nil
+}
+
+/**
+获取当前平台所有交易额(从数据库获取)
+*/
+func (bb *BitBox) GetExchangeAmountFormDb() (*data.ExchangeAmount, error) {
+	var tradeDatas []*data.TradeData
+	var amount float64 = 0
+	s, c := common.Connect(DbAmount, "bibox", "local")
+	defer s.Close()
+	err := c.Find(bson.M{}).All(&tradeDatas)
+	if err != nil {
+		log.Debug("error:%s", err)
+		return nil, err
+	}
+	for _, tradeData := range tradeDatas {
+		amount += tradeData.AmountUsd
+	}
+	exchangeAmount := &data.ExchangeAmount{
+		Platform: PlatForm,
+		TotalUsd: amount,
+	}
 	return exchangeAmount, nil
 }
 
@@ -291,19 +341,13 @@ func (bb *BitBox) GetRecords(base, quote, period string, size int) ([]model.Reco
 
 	var record model.Record
 	var records []model.Record
-	//2019-07-03T04:00:00.000Z
-	timeLayout := "2006-01-02T15:04:05.000Z" //转化所需模板
-	loc, _ := time.LoadLocation("Local")     //重要：获取时区
 	gjson.ParseBytes(body).Get("result").ForEach(func(key, value gjson.Result) bool {
 		record.Open = value.Get("open").Float()
 		record.High = value.Get("high").Float()
 		record.Low = value.Get("low").Float()
 		record.Close = value.Get("close").Float()
 		record.Vol = value.Get("vol").Float()
-		timeStr := strconv.Itoa(int(value.Get("time").Int() / 1000))
-		theTime, _ := time.ParseInLocation(timeLayout, timeStr, loc) //使用模板在对应时区转化为time.time类型
-		sr := theTime.Unix()                                         //转化为时间戳 类型是int64
-		record.Ktime = sr
+		record.Ktime = value.Get("time").Int() / 1000
 		records = append(records, record)
 		return true // keep iterating
 	})

@@ -38,24 +38,7 @@ func (bibox Bibox) Name() string {
 获取汇率
 */
 func (bibox Bibox) GetRate(quote, base string) float64 {
-	var exchangeRate float64
-	if rate, ok := coinRate.Load(base); ok == true {
-		exchangeRate = rate.(float64)
-	} else if strings.ToUpper(base) == "USDT" || strings.ToUpper(base) == "GUSD" || strings.ToUpper(base) == "DAI" { //稳定币
-		/*		url := ApiHost + "?cmd=ticker&pair=" + strings.ToUpper(quote) + "_" + strings.ToUpper(base)
-				content := common.HttpGet(url)
-				last := gjson.ParseBytes(content).Get("result.last").Float()
-				coinRate.Store(quote, last)*/
-		exchangeRate = 1
-	} else {
-		nUrl := ApiHost + "?cmd=ticker&pair=" + strings.ToUpper(base) + "_USDT"
-		//log.Debugf("---quote:%s----base:%s",quote,base)
-		nContent := common.HttpGet(nUrl)
-		nLast := gjson.ParseBytes(nContent).Get("result.last").Float()
-		coinRate.Store(base, nLast)
-		exchangeRate = nLast
-	}
-	return exchangeRate
+	return 0
 }
 
 /**
@@ -91,68 +74,25 @@ func (bibox Bibox) PairHandler() []*data.ExchangeTicker {
 func (bibox Bibox) AmountHandler() []*data.TradeData {
 	//首先获取所有的交易对
 	var tradeDatas []*data.TradeData
-	pairs := bibox.GetAllPair()
-
-	var waitGroup sync.WaitGroup
-	waitGroup.Add(len(pairs))
-
-	for _, pair := range pairs {
-		go func(quote, base string) {
-			defer waitGroup.Done()
-			url := ApiHost + "?cmd=deals&pair=" + quote + "_" + base
-			content := common.HttpGet(url)
-			gjson.ParseBytes(content).Get("result").ForEach(func(key, value gjson.Result) bool {
-				trade := &data.TradeData{
-					Symbol:    quote + "_" + base,
-					Quote:     quote,
-					Base:      base,
-					Amount:    value.Get("amount").Float(),
-					Price:     value.Get("price").Float(),
-					Type:      sideMap[value.Get("side").String()],
-					TradeTime: strconv.FormatInt(value.Get("time").Int(), 10),
-					TradeTs:   value.Get("time").Int() / 1000,
-				}
-				if strings.ToUpper(base) == "USDT" {
-					trade.PriceUsd = trade.Price
-					trade.AmountUsd = trade.Amount
-				} else {
-					rate := bibox.GetRate(quote, base)
-					trade.PriceUsd = rate * trade.Price
-					trade.AmountUsd = rate * trade.Amount
-				}
-				tradeDatas = append(tradeDatas, trade)
-				return true
-			})
-		}(pair.Quote, pair.Base)
-	}
-	waitGroup.Wait()
-
-	/*coinRate.Range(func(key, value interface{}) bool {
-		fmt.Printf("key %s", key)
-		fmt.Println()
-		fmt.Printf("value %f", value)
-		fmt.Println()
-		return true
-	})*/
-
-	return tradeDatas
-}
-
-/**
-获取平台交易对，及其价格
-*/
-func (bibox Bibox) GetAllPair() []*data.MarketPair {
-	var pairs []*data.MarketPair
-	url := ApiHost + "?cmd=pairList"
+	url := ApiHost + "?cmd=marketAll"
 	content := common.HttpGet(url)
 	gjson.ParseBytes(content).Get("result").ForEach(func(key, value gjson.Result) bool {
-		quote, base := strings.Split(value.Get("pair").String(), "_")[0], strings.Split(value.Get("pair").String(), "_")[1]
-		pair := &data.MarketPair{
-			Base:  base,
-			Quote: quote,
+		quote := value.Get("coin_symbol").Str
+		base := value.Get("currency_symbol").Str
+		symbol := strings.ToUpper(quote + "_" + base)
+		last := value.Get("last").Float()
+		lastUsd := value.Get("last_usd").Float()
+		rate := lastUsd / last
+		tradeData := &data.TradeData{
+			Symbol:    symbol,
+			Quote:     quote,
+			Base:      base,
+			Volume:    value.Get("vol24H").Float(),
+			Amount:    value.Get("amount").Float(),
+			AmountUsd: value.Get("amount").Float() * rate,
 		}
-		pairs = append(pairs, pair)
+		tradeDatas = append(tradeDatas, tradeData)
 		return true
 	})
-	return pairs
+	return tradeDatas
 }

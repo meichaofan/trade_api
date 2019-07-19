@@ -70,3 +70,25 @@ func TestBitBox_GetExchangeAmount(t *testing.T) {
 	fmt.Println()
 	fmt.Printf("amount:%f", exchangeAmount.AmountUSD)
 }
+
+func TestBitBox_GetExchangeTickersFromDb(t *testing.T) {
+	bitbox := bibox.BitBox{}
+	exchangeTickers, err := bitbox.GetExchangeTickersFromDb()
+	if err != nil {
+		panic(err)
+	}
+	for _, v := range exchangeTickers {
+		fmt.Printf("quote: %s,base: %s , last: %f ,last_usd: %f", v.Quote, v.Base, v.Last, v.LastUSD)
+		fmt.Println()
+	}
+}
+
+func TestBitBox_GetExchangeAmountFormDb(t *testing.T) {
+	bitbox := bibox.BitBox{}
+	exchangeAmount, err := bitbox.GetExchangeAmountFormDb()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("platform:%s total_usd:%f", exchangeAmount.Platform, exchangeAmount.TotalUsd)
+	fmt.Println()
+}

@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	//env string
+//env string
 )
 
 func init() {
@@ -47,10 +47,10 @@ func updateAmount(exchange exchange.Exchange) {
 	s, c = common.Connect("platform_amount", exchange.Name(), "local")
 	defer s.Close()
 	trades = exchange.AmountHandler()
-	fmt.Printf("the length is %d",len(trades))
+	fmt.Printf("the length is %d", len(trades))
 	fmt.Println()
-	for _,trade := range trades {
-		_, err := c.Upsert(bson.M{"symbol": trade.Symbol, "trade_time": trade.TradeTime}, bson.M{"$set": trade})
+	for _, trade := range trades {
+		_, err := c.Upsert(bson.M{"symbol": trade.Symbol}, bson.M{"$set": trade})
 		if err != nil {
 			log.Debugf("platform:%s symbol %s trade update failed", exchange.Name(), trade.Symbol)
 		}
@@ -59,6 +59,6 @@ func updateAmount(exchange exchange.Exchange) {
 
 func main() {
 	ex := Bibox.Bibox{}
-	//updatePair(ex)
+	updatePair(ex)
 	updateAmount(ex)
 }

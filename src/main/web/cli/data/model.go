@@ -21,7 +21,7 @@ type TradeData struct {
 type ExchangeAmount struct {
 	Platform string  //交易平台
 	TotalUsd float64 //交易额(美元)
-	TotalCny float64 //交易额(人民币)
+	//TotalCny float64 //交易额(人民币)
 }
 
 //----------------------------------------------
