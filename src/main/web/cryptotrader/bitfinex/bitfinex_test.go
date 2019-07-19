@@ -8,7 +8,7 @@ import (
 
 func TestBitfinex_GetTicker(t *testing.T) {
 	b := bitfinex.Bitfinex{}
-	ticker, err := b.GetTicker("btc", "usd")
+	ticker, err := b.GetTicker( "usd","btc")
 	if err != nil {
 		fmt.Printf("%s", err)
 	}
@@ -17,7 +17,7 @@ func TestBitfinex_GetTicker(t *testing.T) {
 
 func TestBitfinex_GetTades(t *testing.T) {
 	b := bitfinex.Bitfinex{}
-	trades, err := b.GetTades("btc", "usd", 100)
+	trades, err := b.GetTades("usd", "btc", 100)
 	if err != nil {
 		fmt.Printf("error:%s", err)
 	}

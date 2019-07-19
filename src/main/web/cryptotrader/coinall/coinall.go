@@ -31,7 +31,7 @@ func New(accessKey string, secretKey string) *CoinAll {
 }
 
 func getInstrumentId(base, quote string) string {
-	return strings.ToUpper(base) + "_" + strings.ToUpper(quote)
+	return strings.ToUpper(quote) + "_" + strings.ToUpper(base)
 }
 
 /**

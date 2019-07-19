@@ -8,7 +8,7 @@ import (
 
 func TestBitZ_GetTicker(t *testing.T) {
 	bz := bitz.BitZ{}
-	ticker, err := bz.GetTicker("btc", "usdt")
+	ticker, err := bz.GetTicker("usdt","btc")
 	if err != nil {
 		fmt.Printf("%s", err)
 	}
@@ -17,7 +17,7 @@ func TestBitZ_GetTicker(t *testing.T) {
 
 func TestBitZ_GetTades(t *testing.T) {
 	bz := bitz.BitZ{}
-	trades, err := bz.GetTades("btc", "usdt")
+	trades, err := bz.GetTades( "usdt","btc")
 	if err!=nil {
 		fmt.Printf("error:%s", err)
 	}
@@ -28,7 +28,7 @@ func TestBitZ_GetTades(t *testing.T) {
 
 func TestBitZ_GetOrderBook(t *testing.T) {
 	bz := bitz.BitZ{}
-	orderBook, err := bz.GetOrderBook("btc", "usdt")
+	orderBook, err := bz.GetOrderBook( "usdt","btc")
 	if err != nil {
 		fmt.Printf("error:%s", err)
 	}

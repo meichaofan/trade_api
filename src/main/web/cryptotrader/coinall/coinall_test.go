@@ -10,5 +10,5 @@ func TestCoinAll_GetMarkets(t *testing.T) {
 }
 func TestCoinAll_GetDeep(t *testing.T) {
 	ca := &CoinAll{}
-	ca.GetDepth("btc","usdt")
+	ca.GetDepth("usdt","btc")
 }

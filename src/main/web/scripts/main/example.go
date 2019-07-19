@@ -14,10 +14,12 @@ import (
 
 /**
 设计思路：交易平台交易额
-1.新建数据库 platforms , 然后再创建 bibox 、coinall等集合
+1.新建数据库 platform_amount , 然后再创建 bibox 、coinall等集合
 2.集合下实时插入数据......
 
 交易平台交易对行情
+1.新建数据库 platform_pair , 然后在创建 bibox、coinall等集合
+2.集合中插入交易对
 */
 
 var (
@@ -26,26 +28,6 @@ var (
 	platforms = []string{"bibox"}
 )
 
-//某个时间，交易单
-type TradeData struct {
-	ID        int64   //交易ID
-	PairQuote string  //交易货币
-	PairBase  string  // 计价货币
-	Symbol    string  //交易对
-	Type      string  //交易类型 [买-卖]
-	Price     float64 //交易价格
-	Volume    float64 //交易量
-	Amount    float64 //交易额(美元)
-	PriceUsd  float64 //交易兑换成美元
-	PriceCny  float64 //交易兑换成人民币
-	TradeTime int64   // 交易时间
-}
-
-type ExchangeTable struct {
-	Platform string  //交易平台
-	TotalUsd float64 //交易额(美元)
-	TotalCny float64 //交易额(人民币)
-}
 
 func init() {
 	fmt.Println("Preparing ...")
@@ -64,7 +46,7 @@ func connect(dbName, cName string) (*mgo.Session, *mgo.Collection) {
 		session, err = mgo.Dial("")
 	} else {
 		fmt.Println("mgomode:", "local")
-		session, err = mgo.Dial("mongodb://192.168.136.130:27017")
+		session, err = mgo.Dial("192.168.244.128:27017")
 	}
 	if err != nil {
 		panic(err)
@@ -86,12 +68,11 @@ func httpGet(url string) []byte {
 	return content
 }
 
-
-
 /**
 写一个函数，实时查询汇率，最多支持两级
 */
-func ExchangeRate(quote, base, platform string) float64 {
+func GetExchangeRate(quote, base, platform string) float64 {
+	var exchangeRate float64
 	switch platform {
 	case "bibox":
 		//假设是bibox平台
@@ -100,12 +81,13 @@ func ExchangeRate(quote, base, platform string) float64 {
 		if strings.ToUpper(base) != "USDT" {
 			nUrl := "https://api.bibox365.com/v1/mdata?cmd=ticker&pair=" + strings.ToUpper(base) + "_USDT"
 			nContent := httpGet(nUrl)
-			return gjson.ParseBytes(content).Get("result.last").Float() * gjson.ParseBytes(nContent).Get("result.last").Float()
+			exchangeRate = gjson.ParseBytes(content).Get("result.last").Float() * gjson.ParseBytes(nContent).Get("result.last").Float()
 		}
-		return gjson.ParseBytes(content).Get("result.last").Float()
-
+		exchangeRate = gjson.ParseBytes(content).Get("result.last").Float()
+	default:
+		exchangeRate = 0
 	}
-
+	return exchangeRate
 }
 
 /*func insertTradeDataToCollection(data TradeData, platform string) {
@@ -114,3 +96,6 @@ func ExchangeRate(quote, base, platform string) float64 {
 	//c.Upsert()
 }
 */
+func InsertPlatformPair() {
+
+}

@@ -8,7 +8,7 @@ import (
 
 func TestBiki_GetTicker(t *testing.T) {
 	ct := cointiger.CoinTiger{}
-	ticker, err := ct.GetTicker("btc", "usdt")
+	ticker, err := ct.GetTicker("usdt", "btc")
 	if err != nil {
 		fmt.Printf("%s", err)
 	}
@@ -17,7 +17,7 @@ func TestBiki_GetTicker(t *testing.T) {
 
 func TestBiki_GetTades(t *testing.T) {
 	ct := cointiger.CoinTiger{}
-	trades, err := ct.GetTades("btc", "usdt", 100)
+	trades, err := ct.GetTades("usdt", "btc", 100)
 	if err != nil {
 		fmt.Printf("error:%s", err)
 	}
@@ -28,7 +28,7 @@ func TestBiki_GetTades(t *testing.T) {
 
 func TestCoinTiger_GetMarketDepth(t *testing.T) {
 	ct := cointiger.CoinTiger{}
-	orderBook, err := ct.GetMarketDepth("btc", "usdt", "step0")
+	orderBook, err := ct.GetMarketDepth( "usdt", "btc","step0")
 	if err != nil {
 		fmt.Printf("error:%s", err)
 	}

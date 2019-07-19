@@ -51,8 +51,8 @@ func TestBiki_GetMarkets(t *testing.T) {
 func TestBitBox_GetExchangeTickers(t *testing.T) {
 	bitbox := bibox.BitBox{}
 	exchangeTickers, err := bitbox.GetExchangeTickers()
-	if err!=nil {
-		fmt.Printf("error:%s",err)
+	if err != nil {
+		fmt.Printf("error:%s", err)
 	}
 	for _, v := range exchangeTickers {
 		fmt.Printf("quote: %s,base: %s , last: %f ,last_usd: %f", v.MarketPair.Quote, v.MarketPair.Base, v.Last, v.LastUSD)

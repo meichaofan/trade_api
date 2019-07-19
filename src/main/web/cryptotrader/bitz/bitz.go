@@ -31,7 +31,7 @@ func New(appId string, secret string) *BitZ {
 }
 
 func getSymbol(base, quote string) string {
-	return strings.ToLower(strings.TrimSpace(base)) + "_" + strings.ToLower(strings.TrimSpace(quote))
+	return strings.ToLower(strings.TrimSpace(quote)) + "_" + strings.ToLower(strings.TrimSpace(base))
 }
 
 /**
@@ -218,7 +218,7 @@ https://apidoc.bitz.top/cn/market-quotation-data/Get-kline-data.html
 func (bz *BitZ) GetRecords(base, quote, period string, size int) ([]model.Record, error) {
 	url := RestHost + "/Market/kline?symbol=" + getSymbol(base, quote) + "&resolution=" + period
 	if size != 0 {
-		url += "&size" + strconv.Itoa(size)
+		url += "&size=" + strconv.Itoa(size)
 	}
 	log.Debugf("Request url:%v", url)
 
@@ -254,7 +254,7 @@ func (bz *BitZ) GetRecords(base, quote, period string, size int) ([]model.Record
 			return true // keep iterating
 		})
 	}else{
-		return nil, errors.New(gjson.GetBytes(body, "msg").Str)
+		return records, errors.New(gjson.GetBytes(body, "msg").Str)
 	}
 	return records, nil
 }

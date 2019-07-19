@@ -232,7 +232,6 @@ func (bb *BitBox) GetExchangeTickers() (model.ExchangeTickers, error) {
 			Amount:             value.Get("amount").Float(),
 			Last:               value.Get("last").Float(),
 			LastUSD:            value.Get("last_usd").Float(),
-			LastCNY:            value.Get("last_cny").Float(),
 			PriceChangePercent: value.Get("percent").Float(),
 			Time:               time.Now(),
 		}
@@ -274,7 +273,7 @@ func (bb *BitBox) GetExchangeAmount() (model.ExchangeAmount, error) {
 func (bb *BitBox) GetRecords(base, quote, period string, size int) ([]model.Record, error) {
 	url := RestHost + "?cmd=kline&pair=" + getSymbol(base, quote) + "&period=" + period
 	if size != 0 {
-		url += "&size" + strconv.Itoa(size)
+		url += "&size=" + strconv.Itoa(size)
 	}
 	log.Debugf("Request url:%v", url)
 

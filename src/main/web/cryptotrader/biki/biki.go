@@ -323,7 +323,7 @@ func (bk *Biki) GetRecords(base, quote, period string) ([]model.Record, error) {
 			return true // keep iterating
 		})
 	} else {
-		return nil, errors.New(gjson.GetBytes(body, "msg").Str)
+		return records, errors.New(gjson.GetBytes(body, "msg").Str)
 
 	}
 

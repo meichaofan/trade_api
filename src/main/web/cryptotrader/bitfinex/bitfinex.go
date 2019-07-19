@@ -41,7 +41,7 @@ func New(apiKey string, secret string) *Bitfinex {
 }
 
 func getSymbol(base, quote string) string {
-	return strings.ToLower(strings.TrimSpace(base)) + strings.ToLower(strings.TrimSpace(quote))
+	return strings.ToLower(strings.TrimSpace(quote)) + strings.ToLower(strings.TrimSpace(base))
 }
 
 /**

@@ -17,7 +17,7 @@ import (
 
 func TestCoinBene_GetTicker(t *testing.T) {
 	cb := coinbene.CoinBene{}
-	ticker, err := cb.GetTicker("btc", "usdt")
+	ticker, err := cb.GetTicker( "usdt","btc")
 	if err != nil {
 		fmt.Printf("%s", err)
 	}
@@ -26,7 +26,7 @@ func TestCoinBene_GetTicker(t *testing.T) {
 
 func TestCoinBene_GetTades(t *testing.T) {
 	cb := coinbene.CoinBene{}
-	trades, err := cb.GetTades("btc", "usdt", 200)
+	trades, err := cb.GetTades( "usdt", "btc",200)
 	if err!=nil {
 		fmt.Printf("error:%s", err)
 	}
@@ -35,7 +35,7 @@ func TestCoinBene_GetTades(t *testing.T) {
 
 func TestCoinBene_GetOrderBook(t *testing.T) {
 	cb := coinbene.CoinBene{}
-	orderBook, err := cb.GetOrderBook("btc", "usdt", 200)
+	orderBook, err := cb.GetOrderBook( "usdt", "btc",200)
 	if err != nil {
 		fmt.Printf("error:%s", err)
 	}

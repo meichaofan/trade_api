@@ -22,6 +22,7 @@ const (
 	TradeUrl  = "https://www.cointiger.one/exchange/trading/api/market/history/trade"
 	DepthUrl  = "https://www.cointiger.one/exchange/trading/api/market/depth"
 	MarketUrl = "https://www.cointiger.one/exchange/trading/api/v2/currencys/v2"
+	KLineURL  = "https://www.cointiger.one/exchange/trading/api/market/history/kline"
 )
 
 //定义taker的成交方向
@@ -44,7 +45,7 @@ func New(apiKey string, secret string) *CoinTiger {
 }
 
 func getSymbol(base, quote string) string {
-	return strings.ToLower(strings.TrimSpace(base)) + strings.ToLower(strings.TrimSpace(quote))
+	return strings.ToLower(strings.TrimSpace(quote)) + strings.ToLower(strings.TrimSpace(base))
 }
 
 /**
@@ -221,4 +222,50 @@ func (ct *CoinTiger) GetMarkets() ([]model.MarketPairInfo, error) {
 		return tradePairs, errors.New(result.Get("msg").String())
 	}
 	return tradePairs, nil
+}
+
+/**
+K线
+https://github.com/cointiger/api-docs/wiki/REST-K%E7%BA%BF%E5%8E%86%E5%8F%B2%E6%95%B0%E6%8D%AE
+*/
+func (ct *CoinTiger) GetRecords(base, quote, period string, size int) ([]model.Record, error) {
+	url := KLineURL + "?symbol=" + getSymbol(base, quote) + "&period=" + period
+	if size != 0 {
+		url += "&size=" + strconv.Itoa(size)
+	}
+	log.Debugf("Request url:%v", url)
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	log.Debugf("Response body: %v", string(body))
+
+	var record model.Record
+	var records []model.Record
+	//2019-07-03T04:00:00.000Z
+	//timeLayout := "2006-01-02T15:04:05.000Z" //转化所需模板
+	//loc, _ := time.LoadLocation("Local")     //重要：获取时区
+	result := gjson.ParseBytes(body)
+	if result.Get("code").Str == "0" {
+		result.Get("data.kline_data").ForEach(func(key, value gjson.Result) bool {
+			record.Open = value.Get("open").Float()
+			record.High = value.Get("high").Float()
+			record.Low = value.Get("low").Float()
+			record.Close = value.Get("close").Float()
+			record.Vol = value.Get("vol").Float()
+			record.Ktime = time.Now().Unix()
+			records = append(records, record)
+			return true // keep iterating
+		})
+	} else {
+		return records, errors.New(result.Get("msg").String())
+	}
+	return records, nil
 }
