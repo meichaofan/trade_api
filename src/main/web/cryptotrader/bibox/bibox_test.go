@@ -8,7 +8,7 @@ import (
 
 func TestBiki_GetTicker(t *testing.T) {
 	bitbox := bibox.BitBox{}
-	ticker, err := bitbox.GetTicker("usdt", "btc")
+	ticker, err := bitbox.GetTicker("ETH", "RED") //RED_ETH
 	if err != nil {
 		fmt.Printf("%s", err)
 	}

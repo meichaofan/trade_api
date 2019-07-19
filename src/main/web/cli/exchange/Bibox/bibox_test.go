@@ -24,10 +24,16 @@ func TestBibox_PairHandler(t *testing.T) {
 func TestBibox_AmountHandler(t *testing.T) {
 	bibox := Bibox.Bibox{}
 	tradeDatas := bibox.AmountHandler()
+	//name := "amount.txt"
+	i := 0
 	for _, v := range tradeDatas {
+		//c := []byte(fmt.Sprintf("symbol:%s,price:%f,price_usd:%f,amount:%f,amount_usd:%f", v.Symbol, v.Price, v.PriceUsd, v.Amount, v.AmountUsd))
 		fmt.Printf("symbol:%s,price:%f,price_usd:%f,amount:%f,amount_usd:%f", v.Symbol, v.Price, v.PriceUsd, v.Amount, v.AmountUsd)
 		fmt.Println()
+		i++
+		//ioutil.WriteFile(name, c, )
 	}
+	println(i)
 }
 
 func TestBibox_GetAllPair(t *testing.T) {

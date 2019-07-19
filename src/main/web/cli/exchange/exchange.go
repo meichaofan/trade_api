@@ -6,7 +6,7 @@ import "trade_api/src/main/web/cli/data"
 交易所
 */
 
-type exchange interface {
+type Exchange interface {
 	//交易所名称
 	Name() string
 	//获取交易对的汇率
