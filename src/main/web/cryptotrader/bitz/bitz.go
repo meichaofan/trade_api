@@ -13,6 +13,10 @@ import (
 	"truxing/commons/log"
 )
 
+/**
+文档：https://apidoc.bitz.com/cn/
+ */
+
 const (
 	RestHost = "https://api.bitzapi.com/"
 )

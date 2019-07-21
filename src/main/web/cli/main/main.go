@@ -10,14 +10,18 @@ import (
 	"trade_api/src/main/web/cli/exchange"
 	"trade_api/src/main/web/cli/exchange/Bibox"
 	"trade_api/src/main/web/cli/exchange/Biki"
+	"trade_api/src/main/web/cli/exchange/Bitz"
+	"trade_api/src/main/web/cli/exchange/Coinbene"
 	"truxing/commons/log"
 )
 
 var (
 	//env string
 	platforms = []exchange.Exchange{
-		Bibox.Bibox{},
-		Biki.Biki{},
+		Bibox.Bibox{},       //bibox
+		Biki.Biki{},         //biki
+		Bitz.Bitz{},         //bitz
+		Coinbene.Coinbene{}, //coinbene
 	}
 )
 
@@ -60,6 +64,8 @@ func updateAmount(exchange exchange.Exchange) {
 		//不同交易所的uniq field不一样
 		switch exchange.Name() {
 		case "bibox":
+		case "bitz":
+		case "coinbene":
 			_, err = c.Upsert(bson.M{"symbol": trade.Symbol}, bson.M{"$set": trade})
 		case "biki":
 			_, err = c.Upsert(bson.M{"id": trade.ID}, bson.M{"$set": trade})

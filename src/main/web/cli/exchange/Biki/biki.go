@@ -136,7 +136,7 @@ func (biki Biki) PairHandler() []*data.ExchangeTicker {
 			highPrice := ret.Get("data.high").Float()
 			lowPrice := ret.Get("data.low").Float()
 			vol := ret.Get("data.vol").Float()
-			amount := (highPrice + lowPrice) * vol
+			amount := ((highPrice + lowPrice) / 2) * vol
 			exchangeTicker := &data.ExchangeTicker{
 				Symbol:             strings.ToUpper(pair.Symbol),
 				Quote:              pair.Quote,
@@ -165,6 +165,9 @@ func (biki Biki) PairHandler() []*data.ExchangeTicker {
 	return exchangeTickers
 }
 
+/**
+先记着，此处可以优化
+*/
 func (biki Biki) AmountHandler() []*data.TradeData {
 	//初始化汇率
 	done := make(chan struct{}, 1)
