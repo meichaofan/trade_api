@@ -58,7 +58,7 @@ func (bibox Bibox) PairHandler() []*data.ExchangeTicker {
 			Volume:             value.Get("vol24H").Float(),
 			Amount:             value.Get("amount").Float(),
 			Last:               value.Get("last").Float(),
-			LastUSD:            value.Get("last_usd").Float(),
+			LastUsd:            value.Get("last_usd").Float(),
 			PriceChangePercent: priceChangePercent,
 			Time:               strconv.FormatInt(time.Now().Unix(), 10),
 		}

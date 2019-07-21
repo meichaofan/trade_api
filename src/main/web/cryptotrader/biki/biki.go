@@ -49,6 +49,7 @@ func getSymbol(base, quote string) string {
 */
 func (biki *Biki) GetTicker(base, quote string) (*model.Ticker, error) {
 	url := RestHost + "open/api/get_ticker?symbol=" + getSymbol(base, quote)
+	log.Debugf("url: %s",url)
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err

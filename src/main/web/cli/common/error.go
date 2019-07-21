@@ -7,3 +7,7 @@ func ErrorHandler(err error) {
 		log.Debugf("err: %s", err)
 	}
 }
+
+func MessageHandler(what, str string) {
+	log.Debugf("%s , this is a message I what to tell you : %s", what, str)
+}

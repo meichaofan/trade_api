@@ -4,15 +4,21 @@ import (
 	"fmt"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"sync"
 	"trade_api/src/main/web/cli/common"
 	"trade_api/src/main/web/cli/data"
 	"trade_api/src/main/web/cli/exchange"
 	"trade_api/src/main/web/cli/exchange/Bibox"
+	"trade_api/src/main/web/cli/exchange/Biki"
 	"truxing/commons/log"
 )
 
 var (
-//env string
+	//env string
+	platforms = []exchange.Exchange{
+		Bibox.Bibox{},
+		Biki.Biki{},
+	}
 )
 
 func init() {
@@ -44,21 +50,41 @@ func updateAmount(exchange exchange.Exchange) {
 	var s *mgo.Session
 	var c *mgo.Collection
 	var trades []*data.TradeData
+	var err error
 	s, c = common.Connect("platform_amount", exchange.Name(), "local")
 	defer s.Close()
 	trades = exchange.AmountHandler()
 	fmt.Printf("the length is %d", len(trades))
 	fmt.Println()
 	for _, trade := range trades {
-		_, err := c.Upsert(bson.M{"symbol": trade.Symbol}, bson.M{"$set": trade})
+		//不同交易所的uniq field不一样
+		switch exchange.Name() {
+		case "bibox":
+			_, err = c.Upsert(bson.M{"symbol": trade.Symbol}, bson.M{"$set": trade})
+		case "biki":
+			_, err = c.Upsert(bson.M{"id": trade.ID}, bson.M{"$set": trade})
+		default:
+			panic("err")
+		}
 		if err != nil {
 			log.Debugf("platform:%s symbol %s trade update failed", exchange.Name(), trade.Symbol)
 		}
 	}
 }
 
+func updatePairAndAmount(e exchange.Exchange) {
+	updatePair(e)
+	updateAmount(e)
+}
+
 func main() {
-	ex := Bibox.Bibox{}
-	updatePair(ex)
-	updateAmount(ex)
+	var wg sync.WaitGroup
+	wg.Add(len(platforms))
+	for _, v := range platforms {
+		go func(e exchange.Exchange) {
+			defer wg.Done()
+			updatePairAndAmount(e)
+		}(v)
+	}
+	wg.Wait()
 }
