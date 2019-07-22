@@ -9,19 +9,20 @@ import (
 	"trade_api/src/main/web/cli/data"
 	"trade_api/src/main/web/cli/exchange"
 	"trade_api/src/main/web/cli/exchange/Bibox"
-	"trade_api/src/main/web/cli/exchange/Biki"
 	"trade_api/src/main/web/cli/exchange/Bitz"
 	"trade_api/src/main/web/cli/exchange/Coinbene"
+	"trade_api/src/main/web/cli/exchange/Cointiger"
 	"truxing/commons/log"
 )
 
 var (
 	//env string
 	platforms = []exchange.Exchange{
-		Bibox.Bibox{},       //bibox
-		Biki.Biki{},         //biki
-		Bitz.Bitz{},         //bitz
-		Coinbene.Coinbene{}, //coinbene
+		Bibox.Bibox{}, //bibox
+		//Biki.Biki{},           //biki
+		Bitz.Bitz{},           //bitz
+		Coinbene.Coinbene{},   //coinbene
+		Cointiger.Cointiger{}, //cointiger
 	}
 )
 
@@ -66,6 +67,7 @@ func updateAmount(exchange exchange.Exchange) {
 		case "bibox":
 		case "bitz":
 		case "coinbene":
+		case "cointiger":
 			_, err = c.Upsert(bson.M{"symbol": trade.Symbol}, bson.M{"$set": trade})
 		case "biki":
 			_, err = c.Upsert(bson.M{"id": trade.ID}, bson.M{"$set": trade})
