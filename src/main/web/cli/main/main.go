@@ -9,9 +9,12 @@ import (
 	"trade_api/src/main/web/cli/data"
 	"trade_api/src/main/web/cli/exchange"
 	"trade_api/src/main/web/cli/exchange/Bibox"
+	"trade_api/src/main/web/cli/exchange/Binance"
 	"trade_api/src/main/web/cli/exchange/Bitz"
+	"trade_api/src/main/web/cli/exchange/Coinall"
 	"trade_api/src/main/web/cli/exchange/Coinbene"
 	"trade_api/src/main/web/cli/exchange/Cointiger"
+	"trade_api/src/main/web/cli/exchange/Huobi"
 	"truxing/commons/log"
 )
 
@@ -23,6 +26,9 @@ var (
 		Bitz.Bitz{},           //bitz
 		Coinbene.Coinbene{},   //coinbene
 		Cointiger.Cointiger{}, //cointiger
+		Coinall.Coinall{},
+		Huobi.Huobi{},
+		Binance.Binance{},
 	}
 )
 
@@ -72,7 +78,7 @@ func updateAmount(exchange exchange.Exchange) {
 		case "biki":
 			_, err = c.Upsert(bson.M{"id": trade.ID}, bson.M{"$set": trade})
 		default:
-			panic("err")
+
 		}
 		if err != nil {
 			log.Debugf("platform:%s symbol %s trade update failed", exchange.Name(), trade.Symbol)
