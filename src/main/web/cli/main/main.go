@@ -14,7 +14,12 @@ import (
 	"trade_api/src/main/web/cli/exchange/Coinall"
 	"trade_api/src/main/web/cli/exchange/Coinbene"
 	"trade_api/src/main/web/cli/exchange/Cointiger"
+	"trade_api/src/main/web/cli/exchange/Fcoin"
+	"trade_api/src/main/web/cli/exchange/Gate"
 	"trade_api/src/main/web/cli/exchange/Huobi"
+	"trade_api/src/main/web/cli/exchange/Mxc"
+	"trade_api/src/main/web/cli/exchange/Okex"
+	"trade_api/src/main/web/cli/exchange/Zb"
 	"truxing/commons/log"
 )
 
@@ -29,6 +34,11 @@ var (
 		Coinall.Coinall{},
 		Huobi.Huobi{},
 		Binance.Binance{},
+		Zb.Zb{},
+		Okex.Okex{},
+		Fcoin.Fcoin{},
+		Gate.Gate{},
+		Mxc.Mxc{},
 	}
 )
 
