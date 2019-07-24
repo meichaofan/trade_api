@@ -21,6 +21,7 @@ const (
 var (
 	//虚拟货币 -- 美元 汇率
 	rateCoin sync.Map
+	one sync.Once
 )
 
 type Binance struct {
@@ -49,7 +50,7 @@ func initCoinRate() {
 //虚拟货币 -- 美元 汇率
 func (c Binance) GetRate(quote, base string) float64 {
 	//initCoinRate只执行一次
-	c.once.Do(initCoinRate)
+	one.Do(initCoinRate)
 	symbol := strings.ToUpper(quote + base)
 	if rate, ok := rateCoin.Load(symbol); ok {
 		r := rate.(float64)
