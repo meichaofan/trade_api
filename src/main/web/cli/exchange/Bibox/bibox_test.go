@@ -16,31 +16,17 @@ func TestBibox_PairHandler(t *testing.T) {
 	bibox := Bibox.Bibox{}
 	exchangeTickers := bibox.PairHandler()
 	for _, v := range exchangeTickers {
-		fmt.Printf("symbol:%s , quote:%s , base:%s,vol:%f,amount:%f,last:%f,last_usd:%f,pcg:%f,time:%d", v.Symbol, v.Quote, v.Base, v.Vol, v.Amount, v.Last, v.LastUSD, v.PriceChangePercent, v.Time)
-		fmt.Println()
+		fmt.Printf("symbol:%s\tlast:%f\tlast_usd:%f\tlast_cny:%f\tamount_%s:%f\tamount_%s:%f\tamount_usd:%f\tamount_cny:%f\tpcg:%f\ttime:%s\n",
+			v.Symbol, v.Last, v.LastUsd, v.LastCny, v.Quote, v.AmountQuote, v.Base, v.AmountBase, v.AmountUsd, v.AmountCny, v.PriceChangePercent, v.Time)
 	}
 }
 
-func TestBibox_AmountHandler(t *testing.T) {
+func Test_AmountUsd(t *testing.T) {
 	bibox := Bibox.Bibox{}
-	tradeDatas := bibox.AmountHandler()
-	//name := "amount.txt"
-	i := 0
-	for _, v := range tradeDatas {
-		//c := []byte(fmt.Sprintf("symbol:%s,price:%f,price_usd:%f,amount:%f,amount_usd:%f", v.Symbol, v.Price, v.PriceUsd, v.Amount, v.AmountUsd))
-		fmt.Printf("symbol:%s,price:%f,price_usd:%f,amount:%f,amount_usd:%f", v.Symbol, v.Price, v.PriceUsd, v.Amount, v.AmountUsd)
-		fmt.Println()
-		i++
-		//ioutil.WriteFile(name, c, )
+	exchangeTickers := bibox.PairHandler()
+	var amountUsd float64 = 0
+	for _, v := range exchangeTickers {
+		amountUsd += v.AmountUsd
 	}
-	println(i)
-}
-
-func TestBibox_GetAllPair(t *testing.T) {
-	bibox := Bibox.Bibox{}
-	pairs := bibox.GetAllPair()
-	for _, v := range pairs {
-		fmt.Printf("quote:%s - base:%s", v.Quote, v.Base)
-		fmt.Println()
-	}
+	fmt.Printf("amount_usd:%f\n", amountUsd)
 }

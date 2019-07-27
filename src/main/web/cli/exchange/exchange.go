@@ -13,6 +13,4 @@ type Exchange interface {
 	GetRate(quote, base string) float64
 	//交易所所有交易对
 	PairHandler() []*data.ExchangeTicker
-	//交易所交易额
-	AmountHandler() []*data.TradeData
 }

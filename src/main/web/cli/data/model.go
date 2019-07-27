@@ -32,11 +32,13 @@ type ExchangeTicker struct {
 	Symbol             string  `bson:"symbol"`               //交易对
 	Quote              string  `bson:"quote"`                //交易货币
 	Base               string  `bson:"base"`                 //计价货币
-	Volume             float64 `bson:"volume"`               // 24成交量
-	Amount             float64 `bson:"amount"`               // 24h成交额
-	AmountUsd          float64 `bson:"amount_usd"`          //交易额 美元
-	Last               float64 `bson:"last"`                 // 最新价格
-	LastUsd            float64 `bson:"last_usd"`             // 最新价格折换成美元
+	AmountQuote        float64 `bson:"amount_quote"`         // 24h成交额(交易货币)
+	AmountBase         float64 `bson:"amount_base"`          // 24h成交额 (计价货币)
+	AmountUsd          float64 `bson:"amount_usd"`           // 24h成交额 (美元)
+	AmountCny          float64 `bson:"amount_cny"`           // 24h成交额 (人民币)
+	Last               float64 `bson:"last"`                 // 最新价格 (计价货币)
+	LastUsd            float64 `bson:"last_usd"`             // 最新价格(美元)
+	LastCny            float64 `bson:"last_cny"`             // 最新价格(人民币)
 	PriceChangePercent float64 `bson:"price_change_percent"` //涨跌幅
 	Time               string  `bson:"time"`                 //string类型的时间 "1563522757819" 为了mongodb存储
 }

@@ -2,9 +2,7 @@ package Biki_test
 
 import (
 	"fmt"
-	"strconv"
 	"testing"
-	"time"
 	"trade_api/src/main/web/cli/exchange/Biki"
 )
 
@@ -15,15 +13,6 @@ func TestGetSymbol(t *testing.T) {
 	}
 }
 
-func TestSign(t *testing.T) {
-	params := map[string]string{
-		"api_key": Biki.ApiKey,
-		"time":    strconv.Itoa(int(time.Now().Unix())),
-		"symbol":  "btcusdt",
-	}
-	r := Biki.Sign(params)
-	fmt.Println(r)
-}
 /*
 func TestGetRate(t *testing.T) {
 	f := Biki.GetRate("eos", "btc")
@@ -34,19 +23,17 @@ func TestBiki_PairHandler(t *testing.T) {
 	biki := Biki.Biki{}
 	ets := biki.PairHandler()
 	for _, v := range ets {
-		fmt.Printf("quote %s base %s last %f last_usd %f", v.Quote, v.Base, v.Last, v.LastUsd)
-		fmt.Println()
+		fmt.Printf("symbol:%s\tlast:%f\tlast_usd:%f\tlast_cny:%f\tamount_%s:%f\tamount_%s:%f\tamount_usd:%f\tamount_cny:%f\tpcg:%f\ttime:%s\n",
+			v.Symbol, v.Last, v.LastUsd, v.LastCny, v.Quote, v.AmountQuote, v.Base, v.AmountBase, v.AmountUsd, v.AmountCny, v.PriceChangePercent, v.Time)
 	}
 }
 
-func TestBiki_AmountHandler(t *testing.T) {
+func Test_AmountUsd(t *testing.T) {
 	biki := Biki.Biki{}
-	tds := biki.AmountHandler()
-	i := 0
-	for _, v := range tds {
-		fmt.Printf("time %s : symbol %s price %f price_usd %f amount %f amount_usd %f",v.TradeTime, v.Symbol, v.Price, v.PriceUsd, v.Amount, v.AmountUsd)
-		fmt.Println()
-		i++
+	exchangeTickers := biki.PairHandler()
+	var amountUsd float64 = 0
+	for _, v := range exchangeTickers {
+		amountUsd += v.AmountUsd
 	}
-	fmt.Printf("the length is %d", i)
+	fmt.Printf("amount_usd:%f\n", amountUsd)
 }

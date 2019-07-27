@@ -1,6 +1,7 @@
 package Binance
 
 import (
+	"fmt"
 	"github.com/tidwall/gjson"
 	"strconv"
 	"strings"
@@ -10,8 +11,8 @@ import (
 )
 
 /**
-文档：
-https://github.com/binance-exchange/binance-official-api-docs/blob/master/rest-api.md
+文档：https://github.com/binance-exchange/binance-official-api-docs/blob/master/rest-api.md
+需要翻墙
 */
 
 const (
@@ -21,7 +22,7 @@ const (
 var (
 	//虚拟货币 -- 美元 汇率
 	rateCoin sync.Map
-	one sync.Once
+	one      sync.Once
 )
 
 type Binance struct {
@@ -60,11 +61,15 @@ func (c Binance) GetRate(quote, base string) float64 {
 }
 
 func (c Binance) PairHandler() []*data.ExchangeTicker {
+	cnyUsdRate := common.CalRate("cny")
 	var exchangeTickers []*data.ExchangeTicker
-	url := ApiHost + "/api/spot/v3/instruments/ticker"
+	url := ApiHost + "/api/v1/ticker/24hr"
 	content := common.HttpGet(url)
+	fmt.Printf("%v", content)
 	ret := gjson.ParseBytes(content)
+
 	ret.ForEach(func(key, value gjson.Result) bool {
+		fmt.Println("---------")
 		var quote string
 		var base string
 		var symbol = value.Get("symbol").Str
@@ -82,39 +87,36 @@ func (c Binance) PairHandler() []*data.ExchangeTicker {
 			base = symbol[len(symbol)-3:]
 		}
 
-		//volume
-		volStr := value.Get("volume").Str
-		vol, _ := strconv.Atoi(volStr)
-		//amount
-		amountStr := value.Get("quoteVolume").Str
-		amount, _ := strconv.Atoi(amountStr)
+		//quote
+		amountQuote := value.Get("volume").Float()
+		//base
+		amountBase := value.Get("quoteVolume").Float()
 		//last
-		lastStr := value.Get("lastPrice").Str
-		last, _ := strconv.Atoi(lastStr)
+		last := value.Get("lastPrice").Float()
 		//pcg
-		pcgStr := value.Get("priceChangePercent").Str
-		pcg, _ := strconv.Atoi(pcgStr)
-
+		pcg := value.Get("priceChangePercent").Float()
 		exchangeTicker := &data.ExchangeTicker{
 			Symbol:             strings.ToUpper(symbol),
 			Quote:              strings.ToUpper(quote),
 			Base:               strings.ToUpper(base),
-			Volume:             float64(vol),
-			Amount:             float64(amount),
-			Last:               float64(last),
+			AmountQuote:        amountQuote,
+			AmountBase:         amountBase,
+			Last:               last,
 			Time:               strconv.FormatInt(value.Get("closeTime").Int(), 10),
-			PriceChangePercent: float64(pcg),
+			PriceChangePercent: pcg,
 		}
 
 		//汇率
 		if strings.ToUpper(base) == "USDT" {
 			exchangeTicker.LastUsd = exchangeTicker.Last
-			exchangeTicker.AmountUsd = exchangeTicker.Amount
+			exchangeTicker.AmountUsd = exchangeTicker.AmountBase
 		} else {
 			rate := c.GetRate(base, "USDT")
 			exchangeTicker.LastUsd = exchangeTicker.Last * rate
-			exchangeTicker.AmountUsd = exchangeTicker.Amount * rate
+			exchangeTicker.AmountUsd = exchangeTicker.AmountBase * rate
 		}
+		exchangeTicker.AmountCny = exchangeTicker.AmountUsd * cnyUsdRate
+		exchangeTicker.LastCny = exchangeTicker.LastUsd * cnyUsdRate
 		exchangeTickers = append(exchangeTickers, exchangeTicker)
 		return true
 	})
@@ -122,7 +124,8 @@ func (c Binance) PairHandler() []*data.ExchangeTicker {
 	return exchangeTickers
 }
 
-func (c Binance) AmountHandler() []*data.TradeData {
-	var tradeDatas []*data.TradeData
-	return tradeDatas
+func Last() {
+	url := ApiHost + "/api/v1/ticker/24hr"
+	content := common.HttpGet(url)
+	fmt.Printf("%v", content)
 }

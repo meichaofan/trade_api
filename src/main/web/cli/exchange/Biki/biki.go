@@ -1,14 +1,10 @@
 package Biki
 
 import (
-	"crypto/md5"
-	"fmt"
 	"github.com/tidwall/gjson"
-	"sort"
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 	"trade_api/src/main/web/cli/common"
 	"trade_api/src/main/web/cli/data"
 )
@@ -18,14 +14,15 @@ import (
 */
 
 const (
-	ApiHost   = "https://api.biki.com"
-	ApiKey    = "e001cacf1d6e0ce79521ca024b70f7f6"
-	SecretKey = "b1bf7a9c25f409fa52d5f8d01414e173"
+	ApiHost = "https://api.biki.com"
+	//ApiKey    = "e001cacf1d6e0ce79521ca024b70f7f6"
+	//SecretKey = "b1bf7a9c25f409fa52d5f8d01414e173"
 )
 
 var (
 	//虚拟货币 -- 美元 汇率
-	rateCoin sync.Map
+	rateCoin   sync.Map
+	cnyUsdRate float64
 )
 
 type Biki struct {
@@ -33,22 +30,6 @@ type Biki struct {
 
 func (biki Biki) Name() string {
 	return "biki"
-}
-
-/**
-计算签名
-*/
-func Sign(params map[string]string) string {
-	var keys []string
-	var mystring string
-	for k, _ := range params {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	for _, k := range keys {
-		mystring += k + params[k]
-	}
-	return fmt.Sprintf("%x", md5.Sum([]byte(mystring+SecretKey)))
 }
 
 /**
@@ -84,27 +65,8 @@ BTC - USDT
 ETH - USDT
 TRX - USDT
 */
-func initCoinRate(done chan<- struct{}) {
-	timeStr := strconv.Itoa(int(time.Now().Unix()))
-	params := map[string]string{
-		"api_key": ApiKey,
-		"time":    timeStr,
-	}
-	sign := Sign(params)
-	url := ApiHost + "/open/api/market?api_key=" + ApiKey + "&time=" + timeStr + "&sign=" + sign
-	content := common.HttpGet(url)
-	ret := gjson.ParseBytes(content)
-	code := ret.Get("code").Int()
-	if code == 0 {
-		symbolsRate := ret.Get("data").Map()
-		for k, v := range symbolsRate {
-			rateCoin.Store(strings.ToUpper(k), v.Float())
-		}
-	} else {
-		common.MessageHandler("biki getRate", ret.Get("msg").Str)
-	}
-	done <- struct {
-	}{}
+func initCnyUsdRate(rate chan<- float64) {
+	rate <- common.CalRate("cny")
 }
 
 func (biki Biki) GetRate(quote, base string) float64 {
@@ -113,14 +75,25 @@ func (biki Biki) GetRate(quote, base string) float64 {
 		r := rate.(float64)
 		return r
 	}
+	url := ApiHost + "/open/api/get_ticker?symbol=" + symbol
+	content := common.HttpGet(url)
+	ret := gjson.ParseBytes(content)
+	code := ret.Get("code").Int()
+	if code == 0 {
+		//btc - usdt
+		//eth - usdt
+		rate := ret.Get("data.last").Float()
+		rateCoin.Store(symbol, rate)
+		return rate
+	}
 	return 0
 }
 
 func (biki Biki) PairHandler() []*data.ExchangeTicker {
-	//初始化汇率
-	done := make(chan struct{}, 1)
-	initCoinRate(done)
-	<-done
+	//初始化cny-usd汇率
+	rate := make(chan float64, 1)
+	initCnyUsdRate(rate)
+	cnyUsdRate := <-rate
 	var exchangeTickers []*data.ExchangeTicker
 	var pairs []*data.MarketPair
 	pairs = GetSymbol()
@@ -132,90 +105,36 @@ func (biki Biki) PairHandler() []*data.ExchangeTicker {
 			url := ApiHost + "/open/api/get_ticker?symbol=" + pair.Symbol
 			content := common.HttpGet(url)
 			ret := gjson.ParseBytes(content)
+			amountQuote := ret.Get("data.vol").Float()
+			highPriceRate := ret.Get("data.high").Float()
+			lowPriceRate := ret.Get("data.low").Float()
+			amountBase := amountQuote * (highPriceRate + lowPriceRate) / 2
 
-			highPrice := ret.Get("data.high").Float()
-			lowPrice := ret.Get("data.low").Float()
-			vol := ret.Get("data.vol").Float()
-			amount := ((highPrice + lowPrice) / 2) * vol
 			exchangeTicker := &data.ExchangeTicker{
 				Symbol:             strings.ToUpper(pair.Symbol),
 				Quote:              pair.Quote,
 				Base:               pair.Base,
-				Volume:             vol,
-				Amount:             amount,
+				AmountQuote:        amountQuote,
+				AmountBase:         amountBase,
 				Last:               ret.Get("data.last").Float(),
 				PriceChangePercent: ret.Get("data.rose").Float(),
 				Time:               strconv.FormatInt(ret.Get("data.time").Int(), 10),
-				//汇率
 			}
+
+			//汇率
 			if strings.ToUpper(pair.Base) == "USDT" {
 				exchangeTicker.LastUsd = exchangeTicker.Last
-				exchangeTicker.AmountUsd = exchangeTicker.Amount
+				exchangeTicker.AmountUsd = exchangeTicker.AmountBase
 			} else {
-				rate := biki.GetRate(pair.Base, "USDT")
-				//fmt.Printf("rate: %f",rate)
-				//fmt.Println()
-				exchangeTicker.LastUsd = exchangeTicker.Last * rate
-				exchangeTicker.AmountUsd = exchangeTicker.Amount * rate
+				baseUsdRate := biki.GetRate(pair.Base, "USDT")
+				exchangeTicker.LastUsd = exchangeTicker.Last * baseUsdRate
+				exchangeTicker.AmountUsd = exchangeTicker.AmountBase * baseUsdRate
 			}
+			exchangeTicker.AmountCny = exchangeTicker.AmountUsd * cnyUsdRate
+			exchangeTicker.LastCny = exchangeTicker.LastUsd * cnyUsdRate
 			exchangeTickers = append(exchangeTickers, exchangeTicker)
 		}(pair)
 	}
 	wg.Wait()
 	return exchangeTickers
-}
-
-/**
-先记着，此处可以优化
-*/
-func (biki Biki) AmountHandler() []*data.TradeData {
-	//初始化汇率
-	done := make(chan struct{}, 1)
-	initCoinRate(done)
-	<-done
-	var tradeDatas []*data.TradeData
-	var pairs []*data.MarketPair
-	pairs = GetSymbol()
-	var wg sync.WaitGroup
-	wg.Add(len(pairs))
-	for _, pair := range pairs {
-		go func(pair *data.MarketPair) {
-			defer wg.Done()
-			url := ApiHost + "/open/api/get_trades?symbol=" + pair.Symbol
-			content := common.HttpGet(url)
-			ret := gjson.ParseBytes(content)
-			code := ret.Get("code").Int()
-			if code == 0 {
-				ret.Get("data").ForEach(func(key, value gjson.Result) bool {
-					volume := value.Get("amount").Float()
-					price := value.Get("price").Float()
-					amount := volume * price
-					tradeData := &data.TradeData{
-						ID:        value.Get("id").String(),
-						Symbol:    strings.ToUpper(pair.Symbol),
-						Quote:     pair.Quote,
-						Base:      pair.Base,
-						Type:      value.Get("type").String(),
-						Volume:    volume,
-						Price:     price,
-						Amount:    amount,
-						TradeTime: strconv.FormatInt(value.Get("ctime").Int(), 10),
-						TradeTs:   value.Get("ctime").Int() / 1000,
-					}
-					if pair.Base == "USDT" {
-						tradeData.PriceUsd = tradeData.Price
-						tradeData.AmountUsd = tradeData.Amount
-					} else {
-						rate := biki.GetRate(pair.Base, "USDT")
-						tradeData.PriceUsd = tradeData.Price * rate
-						tradeData.AmountUsd = tradeData.Amount * rate
-					}
-					tradeDatas = append(tradeDatas, tradeData)
-					return true
-				})
-			}
-		}(pair)
-	}
-	wg.Wait()
-	return tradeDatas
 }
