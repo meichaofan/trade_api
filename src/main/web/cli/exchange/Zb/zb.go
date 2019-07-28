@@ -106,8 +106,3 @@ func (c Zb) PairHandler() []*data.ExchangeTicker {
 	}
 	return exchangeTickers
 }
-
-func (c Zb) AmountHandler() []*data.TradeData {
-	var tradeDatas []*data.TradeData
-	return tradeDatas
-}

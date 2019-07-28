@@ -91,8 +91,3 @@ func (c Mxc) PairHandler() []*data.ExchangeTicker {
 	}
 	return exchangeTickers
 }
-
-func (c Mxc) AmountHandler() []*data.TradeData {
-	var tradeDatas []*data.TradeData
-	return tradeDatas
-}

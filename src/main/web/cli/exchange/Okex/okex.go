@@ -103,8 +103,3 @@ func (c Okex) PairHandler() []*data.ExchangeTicker {
 
 	return exchangeTickers
 }
-
-func (c Okex) AmountHandler() []*data.TradeData {
-	var tradeDatas []*data.TradeData
-	return tradeDatas
-}

@@ -51,6 +51,7 @@ func (c Huobi) GetRate(quote, base string) float64 {
 }
 
 func (c Huobi) PairHandler() []*data.ExchangeTicker {
+	cnyUsdRate := common.CalRate("cny")
 	var exchangeTickers []*data.ExchangeTicker
 	url := ApiHost + "/market/tickers"
 	content := common.HttpGet(url)
@@ -81,8 +82,8 @@ func (c Huobi) PairHandler() []*data.ExchangeTicker {
 				Symbol:             strings.ToUpper(symbol),
 				Quote:              strings.ToUpper(quote),
 				Base:               strings.ToUpper(base),
-				Volume:             value.Get("amount").Float(), //这里取值注意一下
-				Amount:             value.Get("vol").Float(),
+				AmountQuote:        value.Get("amount").Float(), //这里取值注意一下
+				AmountBase:         value.Get("vol").Float(),
 				Last:               last,
 				Time:               timeStr,
 				PriceChangePercent: pcg,
@@ -90,24 +91,21 @@ func (c Huobi) PairHandler() []*data.ExchangeTicker {
 			//汇率
 			if strings.ToUpper(base) == "USDT" {
 				exchangeTicker.LastUsd = exchangeTicker.Last
-				exchangeTicker.AmountUsd = exchangeTicker.Amount
+				exchangeTicker.AmountUsd = exchangeTicker.AmountBase
 			} else if strings.ToUpper(base) == "HT" {
 				rate := c.GetRate("HT", "USDT")
 				exchangeTicker.LastUsd = exchangeTicker.Last * rate
-				exchangeTicker.AmountUsd = exchangeTicker.Amount * rate
+				exchangeTicker.AmountUsd = exchangeTicker.AmountBase * rate
 			} else {
 				rate := c.GetRate(base, "USDT")
 				exchangeTicker.LastUsd = exchangeTicker.Last * rate
-				exchangeTicker.AmountUsd = exchangeTicker.Amount * rate
+				exchangeTicker.AmountUsd = exchangeTicker.AmountBase * rate
 			}
+			exchangeTicker.AmountCny = exchangeTicker.AmountUsd * cnyUsdRate
+			exchangeTicker.LastCny = exchangeTicker.LastUsd * cnyUsdRate
 			exchangeTickers = append(exchangeTickers, exchangeTicker)
 			return true
 		})
 	}
 	return exchangeTickers
-}
-
-func (c Huobi) AmountHandler() []*data.TradeData {
-	var tradeDatas []*data.TradeData
-	return tradeDatas
 }
