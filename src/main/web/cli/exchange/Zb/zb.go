@@ -12,7 +12,7 @@ import (
 
 /**
 文档：https://web.zb.cn/i/developer/restApi
- */
+*/
 
 const (
 	ApiHost = "http://api.zb.cn"
@@ -49,6 +49,7 @@ func (c Zb) GetRate(quote, base string) float64 {
 }
 
 func (c Zb) PairHandler() []*data.ExchangeTicker {
+	cnyUsdRate := common.CalRate("cny")
 	var exchangeTickers []*data.ExchangeTicker
 	url := ApiHost + "/data/v1/allTicker"
 	content := common.HttpGet(url)
@@ -72,42 +73,39 @@ func (c Zb) PairHandler() []*data.ExchangeTicker {
 		}
 
 		//计算交易额
-		vol := value.Get("vol").Float()
+		amountQuote := value.Get("vol").Float()
 		highPrice := value.Get("high").Float()
 		lowPrice := value.Get("low").Float()
-		amount := (highPrice + lowPrice) * vol / 2
+		amountBase := (highPrice + lowPrice) * amountQuote / 2
 
 		timeStr := strconv.FormatInt(time.Now().UnixNano(), 10)
 
 		exchangeTicker := &data.ExchangeTicker{
-			Symbol: strings.ToUpper(symbol),
-			Quote:  strings.ToUpper(quote),
-			Base:   strings.ToUpper(base),
-			Volume: value.Get("vol").Float(),
-			Amount: amount,
-			Last:   value.Get("last").Float(),
-			Time:   timeStr,
+			Symbol:      strings.ToUpper(symbol),
+			Quote:       strings.ToUpper(quote),
+			Base:        strings.ToUpper(base),
+			AmountQuote: amountQuote,
+			AmountBase:  amountBase,
+			Last:        value.Get("last").Float(),
+			Time:        timeStr,
 		}
 
 		//汇率
 		if strings.ToUpper(base) == "USDT" {
 			exchangeTicker.LastUsd = exchangeTicker.Last
-			exchangeTicker.AmountUsd = exchangeTicker.Amount
-		} else if strings.ToUpper(base) == "QC" || strings.ToUpper(base) == "ZB" {
-			rate := c.GetRate("USDT", base) //这里注意  usdtqc usdtzb
+			exchangeTicker.AmountUsd = exchangeTicker.AmountBase
+		} else if strings.ToUpper(base) == "QC" {
+			rate := c.GetRate("USDT", base) //这里注意  usdtqc
 			exchangeTicker.LastUsd = exchangeTicker.Last / rate
-			exchangeTicker.AmountUsd = exchangeTicker.Amount / rate
+			exchangeTicker.AmountUsd = exchangeTicker.AmountBase / rate
 		} else {
 			rate := c.GetRate(base, "USDT")
 			exchangeTicker.LastUsd = exchangeTicker.Last * rate
-			exchangeTicker.AmountUsd = exchangeTicker.Amount * rate
+			exchangeTicker.AmountUsd = exchangeTicker.AmountBase * rate
 		}
+		exchangeTicker.AmountCny = exchangeTicker.AmountUsd * cnyUsdRate
+		exchangeTicker.LastCny = exchangeTicker.LastUsd * cnyUsdRate
 		exchangeTickers = append(exchangeTickers, exchangeTicker)
 	}
 	return exchangeTickers
-}
-
-func (c Zb) AmountHandler() []*data.TradeData {
-	var tradeDatas []*data.TradeData
-	return tradeDatas
 }

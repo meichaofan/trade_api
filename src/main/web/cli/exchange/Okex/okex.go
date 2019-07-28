@@ -47,10 +47,11 @@ func (c Okex) GetRate(quote, base string) float64 {
 		rateCoin.Store(symbol, rate)
 		return rate
 	}
-	return 1;
+	return 1
 }
 
 func (c Okex) PairHandler() []*data.ExchangeTicker {
+	cnyUsdRate := common.CalRate("cny")
 	var exchangeTickers []*data.ExchangeTicker
 	url := ApiHost + "/api/spot/v3/instruments/ticker"
 	content := common.HttpGet(url)
@@ -77,8 +78,8 @@ func (c Okex) PairHandler() []*data.ExchangeTicker {
 			Symbol:             strings.ToUpper(symbol),
 			Quote:              strings.ToUpper(quote),
 			Base:               strings.ToUpper(base),
-			Volume:             value.Get("base_volume_24h").Float(),
-			Amount:             value.Get("quote_volume_24h").Float(),
+			AmountQuote:             value.Get("base_volume_24h").Float(),
+			AmountBase:             value.Get("quote_volume_24h").Float(),
 			Last:               last,
 			Time:               timeStr,
 			PriceChangePercent: pcg,
@@ -87,24 +88,21 @@ func (c Okex) PairHandler() []*data.ExchangeTicker {
 		//汇率
 		if strings.ToUpper(base) == "USDT" {
 			exchangeTicker.LastUsd = exchangeTicker.Last
-			exchangeTicker.AmountUsd = exchangeTicker.Amount
+			exchangeTicker.AmountUsd = exchangeTicker.AmountBase
 		} else if strings.ToUpper(base) == "USDK" {  //怎么出来这么一个货币 -)'
 			rate := c.GetRate("USDT", "USDK")
 			exchangeTicker.LastUsd = exchangeTicker.Last / rate
-			exchangeTicker.AmountUsd = exchangeTicker.Amount / rate
+			exchangeTicker.AmountUsd = exchangeTicker.AmountBase / rate
 		} else {
 			rate := c.GetRate(base, "USDT")
 			exchangeTicker.LastUsd = exchangeTicker.Last * rate
-			exchangeTicker.AmountUsd = exchangeTicker.Amount * rate
+			exchangeTicker.AmountUsd = exchangeTicker.AmountBase * rate
 		}
+		exchangeTicker.AmountCny = exchangeTicker.AmountUsd * cnyUsdRate
+		exchangeTicker.LastCny = exchangeTicker.LastUsd * cnyUsdRate
 		exchangeTickers = append(exchangeTickers, exchangeTicker)
 		return true
 	})
 
 	return exchangeTickers
-}
-
-func (c Okex) AmountHandler() []*data.TradeData {
-	var tradeDatas []*data.TradeData
-	return tradeDatas
 }
