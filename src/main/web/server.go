@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	conf "trade_api/src/main/conf"
+	"trade_api/src/main/conf"
 	handler "trade_api/src/main/web/router"
 
 	"github.com/gin-gonic/gin"
@@ -20,5 +20,7 @@ func main() {
 	router.POST("/btc/order", handler.GetOrderHandler)
 	//交易对
 	router.POST("/btc/marketpairinfo", handler.GetMarketPairInfoHandler)
+	//平台交易额
+	router.POST("/btc/exchangeamount", handler.GetExchangeAmount)
 	router.Run(conf.GetPort())
 }

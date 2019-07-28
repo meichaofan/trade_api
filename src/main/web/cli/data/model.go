@@ -21,7 +21,7 @@ type TradeData struct {
 type ExchangeAmount struct {
 	Platform string  //交易平台
 	TotalUsd float64 //交易额(美元)
-	//TotalCny float64 //交易额(人民币)
+	TotalCny float64 //交易额(人民币)
 }
 
 //----------------------------------------------
@@ -29,18 +29,18 @@ type ExchangeAmount struct {
 //-----------------交易所所支持的交易对最新价格--------------------
 //平台交易所
 type ExchangeTicker struct {
-	Symbol             string  `bson:"symbol"`               //交易对
-	Quote              string  `bson:"quote"`                //交易货币
-	Base               string  `bson:"base"`                 //计价货币
-	AmountQuote        float64 `bson:"amount_quote"`         // 24h成交额(交易货币)
-	AmountBase         float64 `bson:"amount_base"`          // 24h成交额 (计价货币)
-	AmountUsd          float64 `bson:"amount_usd"`           // 24h成交额 (美元)
-	AmountCny          float64 `bson:"amount_cny"`           // 24h成交额 (人民币)
-	Last               float64 `bson:"last"`                 // 最新价格 (计价货币)
-	LastUsd            float64 `bson:"last_usd"`             // 最新价格(美元)
-	LastCny            float64 `bson:"last_cny"`             // 最新价格(人民币)
-	PriceChangePercent float64 `bson:"price_change_percent"` //涨跌幅
-	Time               string  `bson:"time"`                 //string类型的时间 "1563522757819" 为了mongodb存储
+	Symbol             string  `json:"symbol" bson:"symbol"`                             //交易对
+	Quote              string  `json:"quote" bson:"quote"`                               //交易货币
+	Base               string  `json:"base" bson:"base"`                                 //计价货币
+	AmountQuote        float64 `json:"amount_quote" bson:"amount_quote"`                 // 24h成交额(交易货币)
+	AmountBase         float64 `json:"amount_base" bson:"amount_base"`                   // 24h成交额 (计价货币)
+	AmountUsd          float64 `json:"amount_usd" bson:"amount_usd"`                     // 24h成交额 (美元)
+	AmountCny          float64 `json:"amount_cny" bson:"amount_cny"`                     // 24h成交额 (人民币)
+	Last               float64 `json:"last" bson:"last"`                                 // 最新价格 (计价货币)
+	LastUsd            float64 `json:"last_usd" bson:"last_usd"`                         // 最新价格(美元)
+	LastCny            float64 `json:"last_cny" bson:"last_cny"`                         // 最新价格(人民币)
+	PriceChangePercent float64 `json:"price_change_percent" bson:"price_change_percent"` //涨跌幅
+	Time               string  `json:"time" bson:"time"`                                 //string类型的时间 "1563522757819" 为了mongodb存储
 }
 
 type MarketPair struct {

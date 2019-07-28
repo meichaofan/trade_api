@@ -2,7 +2,10 @@ package web
 
 import (
 	"context"
+	"gopkg.in/mgo.v2/bson"
 	"net/http"
+	"trade_api/src/main/web/cli/common"
+	"trade_api/src/main/web/cli/data"
 	"trade_api/src/main/web/cryptotrader/bibox"
 	"trade_api/src/main/web/cryptotrader/biki"
 	"trade_api/src/main/web/cryptotrader/bitfinex"
@@ -151,7 +154,7 @@ func ZbTradeapi(base, quote, typ, acckey, secret string, since, size int, platfo
 		api := fcoin.New(acckey, secret)
 		trades, err = api.GetTrades(quote, base)
 	case "coinall":
-		api := coinall2.New(acckey,secret)
+		api := coinall2.New(acckey, secret)
 		trades, err = api.GetTades(base, quote, int(since))
 	case "bibox":
 		api := bibox.New("", "")
@@ -221,17 +224,17 @@ func ZbOrderBook(base, quote, typ, acckey, secret string, since, size int, platf
 		api := coinall2.New(acckey, secret)
 		trades, err = api.GetDepth(base, quote)
 	case "bibox":
-		api := bibox.New("","")
+		api := bibox.New("", "")
 		trades, err = api.GetMarketDepth(base, quote, size)
 	case "biki":
-		api := biki.New("","")
+		api := biki.New("", "")
 		trades, err = api.GetMarketDepth(base, quote, "step0")
 	case "bitz":
-		api := bitz.New("","")
+		api := bitz.New("", "")
 		trades, err = api.GetOrderBook(base, quote)
 	case "coinbene":
-		api := coinbene.New("","")
-		trades, err = api.GetOrderBook(base, quote,size)
+		api := coinbene.New("", "")
+		trades, err = api.GetOrderBook(base, quote, size)
 	case "cointiger":
 		api := cointiger.New("", "")
 		trades, err = api.GetMarketDepth(base, quote, "step0")
@@ -266,16 +269,16 @@ func GetMarketPairInfo(platform string) ([]model.MarketPairInfo, error) {
 		api := coinall2.New("", "")
 		marketpairinfo, err = api.GetMarkets()
 	case "bibox":
-		api := bibox.New("","")
+		api := bibox.New("", "")
 		marketpairinfo, err = api.GetMarkets()
 	case "biki":
-		api := biki.New("","")
+		api := biki.New("", "")
 		marketpairinfo, err = api.GetMarkets()
 	case "bitz":
-		api := bitz.New("","")
+		api := bitz.New("", "")
 		marketpairinfo, err = api.GetMarkets()
 	case "coinbene":
-		api := coinbene.New("","")
+		api := coinbene.New("", "")
 		marketpairinfo, err = api.GetMarkets()
 	case "cointiger":
 		api := cointiger.New("", "")
@@ -429,5 +432,42 @@ func GetMarketPairInfoHandler(c *gin.Context) {
 			"status":      "success",
 		},
 		"data": result,
+	})
+}
+
+func GetExchangeAmount(c *gin.Context) {
+	platform := c.PostForm("platform")
+	var exchangeTickers []*data.ExchangeTicker
+	var amountUsd float64 = 0
+	var amountCny float64 = 0
+	s, col := common.Connect("platform_pair", platform, "local")
+	defer s.Close()
+	err := col.Find(bson.M{}).All(&exchangeTickers)
+	if err != nil {
+		log.Debug("error:%s", err)
+		c.JSON(http.StatusOK, gin.H{
+			"status": gin.H{
+				"status_code": 500,
+				"status":      "error",
+			},
+			"data": "",
+		})
+		return
+	}
+	for _, tradeData := range exchangeTickers {
+		amountUsd += tradeData.AmountUsd
+		amountCny += tradeData.AmountCny
+	}
+	exchangeAmount := &data.ExchangeAmount{
+		Platform: platform,
+		TotalUsd: amountUsd,
+		TotalCny: amountCny,
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"status": gin.H{
+			"status_code": http.StatusOK,
+			"status":      "success",
+		},
+		"data": exchangeAmount,
 	})
 }

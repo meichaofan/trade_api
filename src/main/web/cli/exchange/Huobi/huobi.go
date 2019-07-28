@@ -47,7 +47,7 @@ func (c Huobi) GetRate(quote, base string) float64 {
 		rateCoin.Store(symbol, rate)
 		return rate
 	}
-	return 1;
+	return 1
 }
 
 func (c Huobi) PairHandler() []*data.ExchangeTicker {
@@ -63,9 +63,9 @@ func (c Huobi) PairHandler() []*data.ExchangeTicker {
 			var quote string
 			var base string
 			symbol := value.Get("symbol").Str
-			if strings.HasSuffix(symbol, "usdt") {
+			if strings.HasSuffix(symbol, "usdt") || strings.HasSuffix(symbol, "husd") {
 				quote = symbol[:len(symbol)-4]
-				base = "USDT"
+				base = symbol[len(symbol)-4:]
 			} else if strings.HasSuffix(symbol, "ht") {
 				quote = symbol[:len(symbol)-2]
 				base = "HT"
@@ -92,10 +92,10 @@ func (c Huobi) PairHandler() []*data.ExchangeTicker {
 			if strings.ToUpper(base) == "USDT" {
 				exchangeTicker.LastUsd = exchangeTicker.Last
 				exchangeTicker.AmountUsd = exchangeTicker.AmountBase
-			} else if strings.ToUpper(base) == "HT" {
-				rate := c.GetRate("HT", "USDT")
-				exchangeTicker.LastUsd = exchangeTicker.Last * rate
-				exchangeTicker.AmountUsd = exchangeTicker.AmountBase * rate
+			} else if strings.ToUpper(base) == "HUSD" {
+				rate := c.GetRate("USDT", "HUSD")
+				exchangeTicker.LastUsd = exchangeTicker.Last / rate
+				exchangeTicker.AmountUsd = exchangeTicker.AmountBase / rate
 			} else {
 				rate := c.GetRate(base, "USDT")
 				exchangeTicker.LastUsd = exchangeTicker.Last * rate

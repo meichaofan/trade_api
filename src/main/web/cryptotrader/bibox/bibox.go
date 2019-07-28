@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 	"trade_api/src/main/web/cli/common"
 	"trade_api/src/main/web/cli/data"
 	"truxing/commons/log"
@@ -24,7 +23,6 @@ const (
 	RestHost = "https://api.bibox365.com/v1/mdata"
 	PlatForm = "bibox"
 	DbPair   = "platform_pair"
-	DbAmount = "platform_amount"
 )
 
 //定义taker的成交方向
@@ -208,116 +206,6 @@ func (bb *BitBox) GetMarkets() ([]model.MarketPairInfo, error) {
 }
 
 /**
-交易所所有交易对及其价格
-*/
-func (bb *BitBox) GetExchangeTickers() (model.ExchangeTickers, error) {
-	var exchangeTickers model.ExchangeTickers
-	url := RestHost + "?cmd=marketAll"
-	log.Debugf("url: %s", url)
-	resp, err := http.Get(url)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	log.Debugf("Response body: %v", string(body))
-	gjson.ParseBytes(body).Get("result").ForEach(func(key, value gjson.Result) bool {
-
-		marketPair := model.MarketPairInfo{
-			Base:  value.Get("currency_symbol").String(),
-			Quote: value.Get("coin_symbol").String(),
-		}
-
-		exchangeTicker := &model.ExchangeTicker{
-			MarketPair:         marketPair,
-			Vol:                value.Get("vol24H").Float(),
-			Amount:             value.Get("amount").Float(),
-			Last:               value.Get("last").Float(),
-			LastUSD:            value.Get("last_usd").Float(),
-			PriceChangePercent: value.Get("percent").Float(),
-			Time:               time.Now(),
-		}
-
-		exchangeTickers = append(exchangeTickers, exchangeTicker)
-		return true
-	})
-	return exchangeTickers, nil
-}
-
-/**
-交易所所有交易对及其价格（从数据库获取）
-完全没问题
-*/
-
-func (bb *BitBox) GetExchangeTickersFromDb() ([]*data.ExchangeTicker, error) {
-	var exchangeTicker []*data.ExchangeTicker
-	s, c := common.Connect(DbPair, "bibox", "local")
-	defer s.Close()
-	err := c.Find(bson.M{}).All(&exchangeTicker)
-	if err != nil {
-		log.Debug("error:%s", err)
-		return nil, err
-	}
-	return exchangeTicker, nil
-}
-
-/**
-获取当前平台所有交易额
-https://github.com/Biboxcom/API_Docs/wiki/REST_API_Reference#%E6%9F%A5%E8%AF%A2%E6%88%90%E4%BA%A4%E8%AE%B0%E5%BD%95
-这个👍
-*/
-func (bb *BitBox) GetExchangeAmount() (model.ExchangeAmount, error) {
-	var exchangeAmount model.ExchangeAmount
-	url := RestHost + "?cmd=marketAll"
-	log.Debugf("url: %s", url)
-	resp, err := http.Get(url)
-	if err != nil {
-		return exchangeAmount, err
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return exchangeAmount, err
-	}
-	log.Debugf("Response body: %v", string(body))
-	gjson.ParseBytes(body).Get("result").ForEach(func(key, value gjson.Result) bool {
-		last := value.Get("last").Float()
-		lastUsd := value.Get("last_usd").Float()
-		rate := lastUsd / last
-		exchangeAmount.AmountUSD += value.Get("amount").Float() * rate
-		return true
-	})
-	exchangeAmount.PlatForm = PlatForm
-	return exchangeAmount, nil
-}
-
-/**
-获取当前平台所有交易额(从数据库获取)
-*/
-func (bb *BitBox) GetExchangeAmountFormDb() (*data.ExchangeAmount, error) {
-	var tradeDatas []*data.TradeData
-	var amount float64 = 0
-	s, c := common.Connect(DbAmount, "bibox", "local")
-	defer s.Close()
-	err := c.Find(bson.M{}).All(&tradeDatas)
-	if err != nil {
-		log.Debug("error:%s", err)
-		return nil, err
-	}
-	for _, tradeData := range tradeDatas {
-		amount += tradeData.AmountUsd
-	}
-	exchangeAmount := &data.ExchangeAmount{
-		Platform: PlatForm,
-		TotalUsd: amount,
-	}
-	return exchangeAmount, nil
-}
-
-/**
 获取k线 https://github.com/Biboxcom/API_Docs/wiki/REST_API_Reference#%E6%9F%A5%E8%AF%A2k%E7%BA%BF
 */
 func (bb *BitBox) GetRecords(base, quote, period string, size int) ([]model.Record, error) {
@@ -353,4 +241,46 @@ func (bb *BitBox) GetRecords(base, quote, period string, size int) ([]model.Reco
 	})
 
 	return records, nil
+}
+
+/**
+获取当前平台所有交易额(从数据库获取)
+*/
+func (bb *BitBox) GetExchangeAmountFormDb() (*data.ExchangeAmount, error) {
+	var tradeDatas []*data.ExchangeTicker
+	var amountUsd float64 = 0
+	var amountCny float64 = 0
+	s, c := common.Connect(DbPair, "bibox", "local")
+	defer s.Close()
+	err := c.Find(bson.M{}).All(&tradeDatas)
+	if err != nil {
+		log.Debug("error:%s", err)
+		return nil, err
+	}
+	for _, tradeData := range tradeDatas {
+		amountUsd += tradeData.AmountUsd
+		amountCny += tradeData.AmountCny
+	}
+	exchangeAmount := &data.ExchangeAmount{
+		Platform: PlatForm,
+		TotalUsd: amountUsd,
+		TotalCny: amountCny,
+	}
+	return exchangeAmount, nil
+}
+
+/**
+交易所所有交易对及其价格（从数据库获取）
+完全没问题
+*/
+func (bb *BitBox) GetExchangeTickersFromDb() ([]*data.ExchangeTicker, error) {
+	var exchangeTicker []*data.ExchangeTicker
+	s, c := common.Connect(DbPair, "bibox", "local")
+	defer s.Close()
+	err := c.Find(bson.M{}).All(&exchangeTicker)
+	if err != nil {
+		log.Debug("error:%s", err)
+		return nil, err
+	}
+	return exchangeTicker, nil
 }
