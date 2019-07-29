@@ -47,7 +47,7 @@ func (c Huobi) GetRate(quote, base string) float64 {
 		rateCoin.Store(symbol, rate)
 		return rate
 	}
-	return 1;
+	return 1
 }
 
 func (c Huobi) PairHandler() []*data.ExchangeTicker {
@@ -62,9 +62,9 @@ func (c Huobi) PairHandler() []*data.ExchangeTicker {
 			var quote string
 			var base string
 			symbol := value.Get("symbol").Str
-			if strings.HasSuffix(symbol, "usdt") {
+			if strings.HasSuffix(symbol, "usdt") || strings.HasSuffix(symbol, "husd") {
 				quote = symbol[:len(symbol)-4]
-				base = "USDT"
+				base = symbol[len(symbol)-4:]
 			} else if strings.HasSuffix(symbol, "ht") {
 				quote = symbol[:len(symbol)-2]
 				base = "HT"
@@ -81,8 +81,8 @@ func (c Huobi) PairHandler() []*data.ExchangeTicker {
 				Symbol:             strings.ToUpper(symbol),
 				Quote:              strings.ToUpper(quote),
 				Base:               strings.ToUpper(base),
-				Volume:             value.Get("amount").Float(), //这里取值注意一下
-				Amount:             value.Get("vol").Float(),
+				AmountQuote:        value.Get("amount").Float(), //这里取值注意一下
+				AmountBase:         value.Get("vol").Float(),
 				Last:               last,
 				Time:               timeStr,
 				PriceChangePercent: pcg,
@@ -90,24 +90,21 @@ func (c Huobi) PairHandler() []*data.ExchangeTicker {
 			//汇率
 			if strings.ToUpper(base) == "USDT" {
 				exchangeTicker.LastUsd = exchangeTicker.Last
-				exchangeTicker.AmountUsd = exchangeTicker.Amount
-			} else if strings.ToUpper(base) == "HT" {
-				rate := c.GetRate("HT", "USDT")
-				exchangeTicker.LastUsd = exchangeTicker.Last * rate
-				exchangeTicker.AmountUsd = exchangeTicker.Amount * rate
+				exchangeTicker.AmountUsd = exchangeTicker.AmountBase
+			} else if strings.ToUpper(base) == "HUSD" {
+				rate := c.GetRate("USDT", "HUSD")
+				exchangeTicker.LastUsd = exchangeTicker.Last / rate
+				exchangeTicker.AmountUsd = exchangeTicker.AmountBase / rate
 			} else {
 				rate := c.GetRate(base, "USDT")
 				exchangeTicker.LastUsd = exchangeTicker.Last * rate
-				exchangeTicker.AmountUsd = exchangeTicker.Amount * rate
+				exchangeTicker.AmountUsd = exchangeTicker.AmountBase * rate
 			}
+			exchangeTicker.AmountCny = exchangeTicker.AmountUsd * common.CnyUsdRate
+			exchangeTicker.LastCny = exchangeTicker.LastUsd * common.CnyUsdRate
 			exchangeTickers = append(exchangeTickers, exchangeTicker)
 			return true
 		})
 	}
 	return exchangeTickers
-}
-
-func (c Huobi) AmountHandler() []*data.TradeData {
-	var tradeDatas []*data.TradeData
-	return tradeDatas
 }

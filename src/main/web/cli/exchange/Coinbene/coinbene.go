@@ -69,23 +69,25 @@ func (c Coinbene) PairHandler() []*data.ExchangeTicker {
 				base = symbol[len(symbol)-3:]
 			}
 			exchangeTicker := &data.ExchangeTicker{
-				Symbol: strings.ToUpper(symbol),
-				Quote:  strings.ToUpper(quote),
-				Base:   strings.ToUpper(base),
-				Volume: value.Get("24hrVol").Float(),
-				Amount: value.Get("24hrAmt").Float(),
-				Last:   value.Get("last").Float(),
-				Time:   strconv.FormatInt(ret.Get("timestamp").Int(), 10),
+				Symbol:      strings.ToUpper(symbol),
+				Quote:       strings.ToUpper(quote),
+				Base:        strings.ToUpper(base),
+				AmountQuote: value.Get("24hrVol").Float(),
+				AmountBase:  value.Get("24hrAmt").Float(),
+				Last:        value.Get("last").Float(),
+				Time:        strconv.FormatInt(ret.Get("timestamp").Int(), 10),
 			}
 			//汇率
 			if strings.ToUpper(base) == "USDT" {
 				exchangeTicker.LastUsd = exchangeTicker.Last
-				exchangeTicker.AmountUsd = exchangeTicker.Amount
+				exchangeTicker.AmountUsd = exchangeTicker.AmountBase
 			} else {
 				rate := c.GetRate(base, "USDT")
 				exchangeTicker.LastUsd = exchangeTicker.Last * rate
-				exchangeTicker.AmountUsd = exchangeTicker.Amount * rate
+				exchangeTicker.AmountUsd = exchangeTicker.AmountBase * rate
 			}
+			exchangeTicker.AmountCny = exchangeTicker.AmountUsd * common.CnyUsdRate
+			exchangeTicker.LastCny = exchangeTicker.LastUsd * common.CnyUsdRate
 			exchangeTickers = append(exchangeTickers, exchangeTicker)
 			return true
 		})
@@ -93,47 +95,4 @@ func (c Coinbene) PairHandler() []*data.ExchangeTicker {
 		common.MessageHandler(c.Name(), ret.Get("description").Str)
 	}
 	return exchangeTickers
-}
-
-func (c Coinbene) AmountHandler() []*data.TradeData {
-	var tradeDatas []*data.TradeData
-	url := ApiHost + "/ticker?symbol=all"
-	content := common.HttpGet(url)
-	ret := gjson.ParseBytes(content)
-	status := ret.Get("status").Str
-	if status == "ok" {
-		ret.Get("ticker").ForEach(func(key, value gjson.Result) bool {
-			var quote string
-			var base string
-			symbol := value.Get("symbol").Str
-			if strings.HasSuffix(symbol, "USDT") {
-				quote = symbol[:len(symbol)-4]
-				base = "USDT"
-			} else { //BTC - ETH
-				quote = symbol[:len(symbol)-3]
-				base = symbol[len(symbol)-3:]
-			}
-			tradeData := &data.TradeData{
-				Symbol: strings.ToUpper(symbol),
-				Quote:  strings.ToUpper(quote),
-				Base:   strings.ToUpper(base),
-				Volume: value.Get("24hrVol").Float(),
-				Amount: value.Get("24hrAmt").Float(),
-				Price:  value.Get("last").Float(),
-			}
-			if strings.ToUpper(base) == "USDT" {
-				tradeData.PriceUsd = tradeData.Price
-				tradeData.AmountUsd = tradeData.Amount
-			} else {
-				rate := c.GetRate(base, "USDT")
-				tradeData.PriceUsd = tradeData.Price * rate
-				tradeData.AmountUsd = tradeData.Amount * rate
-			}
-			tradeDatas = append(tradeDatas, tradeData)
-			return true
-		})
-	} else {
-		common.MessageHandler(c.Name(), ret.Get("description").Str)
-	}
-	return tradeDatas
 }

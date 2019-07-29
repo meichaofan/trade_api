@@ -1,7 +1,6 @@
 package Binance
 
 import (
-	"fmt"
 	"github.com/tidwall/gjson"
 	"strconv"
 	"strings"
@@ -26,7 +25,6 @@ var (
 )
 
 type Binance struct {
-	once sync.Once
 }
 
 func (c Binance) Name() string {
@@ -37,7 +35,6 @@ func initCoinRate() {
 	url := ApiHost + "/api/v3/ticker/price"
 	content := common.HttpGet(url)
 	ret := gjson.ParseBytes(content)
-
 	ret.ForEach(func(key, value gjson.Result) bool {
 		symbol := value.Get("symbol").Str
 		if strings.HasSuffix(symbol, "USDT") {
@@ -61,15 +58,11 @@ func (c Binance) GetRate(quote, base string) float64 {
 }
 
 func (c Binance) PairHandler() []*data.ExchangeTicker {
-	cnyUsdRate := common.CalRate("cny")
 	var exchangeTickers []*data.ExchangeTicker
 	url := ApiHost + "/api/v1/ticker/24hr"
 	content := common.HttpGet(url)
-	fmt.Printf("%v", content)
 	ret := gjson.ParseBytes(content)
-
 	ret.ForEach(func(key, value gjson.Result) bool {
-		fmt.Println("---------")
 		var quote string
 		var base string
 		var symbol = value.Get("symbol").Str
@@ -115,17 +108,11 @@ func (c Binance) PairHandler() []*data.ExchangeTicker {
 			exchangeTicker.LastUsd = exchangeTicker.Last * rate
 			exchangeTicker.AmountUsd = exchangeTicker.AmountBase * rate
 		}
-		exchangeTicker.AmountCny = exchangeTicker.AmountUsd * cnyUsdRate
-		exchangeTicker.LastCny = exchangeTicker.LastUsd * cnyUsdRate
+		exchangeTicker.AmountCny = exchangeTicker.AmountUsd * common.CnyUsdRate
+		exchangeTicker.LastCny = exchangeTicker.LastUsd * common.CnyUsdRate
 		exchangeTickers = append(exchangeTickers, exchangeTicker)
 		return true
 	})
 
 	return exchangeTickers
-}
-
-func Last() {
-	url := ApiHost + "/api/v1/ticker/24hr"
-	content := common.HttpGet(url)
-	fmt.Printf("%v", content)
 }

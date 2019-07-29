@@ -78,74 +78,28 @@ func (c Cointiger) PairHandler() []*data.ExchangeTicker {
 			Symbol:             strings.ToUpper(symbol),
 			Quote:              strings.ToUpper(quote),
 			Base:               strings.ToUpper(base),
-			Volume:             value.Get("baseVolume").Float(),
-			Amount:             value.Get("quoteVolume").Float(),
+			AmountQuote:        value.Get("baseVolume").Float(),
+			AmountBase:         value.Get("quoteVolume").Float(),
 			Last:               value.Get("last").Float(),
-			Time:               value.Get("id").Str,
+			Time:               value.Get("id").Str, // id就是time
 			PriceChangePercent: value.Get("percentChange").Float(),
 		}
 
 		//汇率
 		if strings.ToUpper(base) == "USDT" {
 			exchangeTicker.LastUsd = exchangeTicker.Last
-			exchangeTicker.AmountUsd = exchangeTicker.Amount
+			exchangeTicker.AmountUsd = exchangeTicker.AmountBase
 		} else if strings.ToUpper(base) == "BITCNY" { //人民币
-			rate := common.CalRate("cny")
-			exchangeTicker.LastUsd = exchangeTicker.Last / rate
-			exchangeTicker.AmountUsd = exchangeTicker.Amount / rate
+			exchangeTicker.LastUsd = exchangeTicker.Last / common.CnyUsdRate
+			exchangeTicker.AmountUsd = exchangeTicker.AmountBase / common.CnyUsdRate
 		} else {
 			rate := c.GetRate(base, "USDT")
 			exchangeTicker.LastUsd = exchangeTicker.Last * rate
-			exchangeTicker.AmountUsd = exchangeTicker.Amount * rate
+			exchangeTicker.AmountUsd = exchangeTicker.AmountBase * rate
 		}
+		exchangeTicker.AmountCny = exchangeTicker.AmountUsd * common.CnyUsdRate
+		exchangeTicker.LastCny = exchangeTicker.LastUsd * common.CnyUsdRate
 		exchangeTickers = append(exchangeTickers, exchangeTicker)
-
 	}
 	return exchangeTickers
-}
-
-func (c Cointiger) AmountHandler() []*data.TradeData {
-	var tradeDatas []*data.TradeData
-	url := TickerAllHost
-	content := common.HttpGet(url)
-	symbols := gjson.ParseBytes(content).Map()
-	for symbol, value := range symbols {
-		var quote string
-		var base string
-		s := symbol
-		if strings.HasSuffix(s, "USDT") {
-			quote = symbol[:len(symbol)-4]
-			base = "USDT"
-		} else if strings.HasSuffix(s, "BITCNY") {
-			quote = symbol[:len(symbol)-6]
-			base = "BITCNY"
-		} else {
-			//BTC - ETH -TRX
-			quote = symbol[:len(symbol)-3]
-			base = symbol[len(symbol)-3:]
-		}
-		tradeData := &data.TradeData{
-			Symbol: strings.ToUpper(symbol),
-			Quote:  strings.ToUpper(quote),
-			Base:   strings.ToUpper(base),
-			Volume: value.Get("baseVolume").Float(),
-			Amount: value.Get("quoteVolume").Float(),
-			Price:  value.Get("last").Float(),
-		}
-		//汇率
-		if strings.ToUpper(base) == "USDT" {
-			tradeData.PriceUsd = tradeData.Price
-			tradeData.AmountUsd = tradeData.Amount
-		} else if strings.ToUpper(base) == "BITCNY" { //人民币
-			rate := common.CalRate("cny")
-			tradeData.PriceUsd = tradeData.Price / rate
-			tradeData.AmountUsd = tradeData.Amount / rate
-		} else {
-			rate := c.GetRate(base, "USDT")
-			tradeData.PriceUsd = tradeData.Price * rate
-			tradeData.AmountUsd = tradeData.Amount * rate
-		}
-		tradeDatas = append(tradeDatas, tradeData)
-	}
-	return tradeDatas
 }

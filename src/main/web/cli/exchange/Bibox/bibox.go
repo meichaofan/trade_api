@@ -34,7 +34,6 @@ func (bibox Bibox) GetRate(quote, base string) float64 {
 获取平台交易对及其价格
 */
 func (bibox Bibox) PairHandler() []*data.ExchangeTicker {
-	cnyUsdRate := common.CalRate("cny")
 	var exchangeTickers []*data.ExchangeTicker
 	url := ApiHost + "?cmd=marketAll"
 	content := common.HttpGet(url)
@@ -50,12 +49,12 @@ func (bibox Bibox) PairHandler() []*data.ExchangeTicker {
 		last := value.Get("last").Float()
 		lastUsd := value.Get("last_usd").Float()
 		baseUsdRate := lastUsd / last
-		lastCny := lastUsd * cnyUsdRate
+		lastCny := lastUsd * common.CnyUsdRate
 		//amount 看文档 对比 mytoken App 可知
 		amountQuote := value.Get("vol24H").Float()
 		amountBase := value.Get("amount").Float()
 		amountUsd := amountBase * baseUsdRate
-		amountCny := amountUsd * cnyUsdRate
+		amountCny := amountUsd * common.CnyUsdRate
 		exchangeTicker := &data.ExchangeTicker{
 			Symbol:             strings.ToUpper(Symbol),
 			Quote:              strings.ToUpper(quote),

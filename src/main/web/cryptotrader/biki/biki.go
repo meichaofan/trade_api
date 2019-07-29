@@ -5,11 +5,14 @@ import (
 	"github.com/Akagi201/cryptotrader/model"
 	"github.com/spf13/cast"
 	"github.com/tidwall/gjson"
+	"gopkg.in/mgo.v2/bson"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
+	"trade_api/src/main/web/cli/common"
+	"trade_api/src/main/web/cli/data"
 	"truxing/commons/log"
 )
 
@@ -20,6 +23,8 @@ https://bikicoin.oss-cn-hangzhou.aliyuncs.com/web_doc/openapi.pdf
 
 const (
 	RestHost = "https://api.biki.com/"
+	PlatForm = "biki"
+	DbPair   = "platform_pair"
 )
 
 var (
@@ -218,75 +223,6 @@ func (biki *Biki) GetMarkets() ([]model.MarketPairInfo, error) {
 }
 
 /**
-交易所所有交易对及其价格
-*/
-func (bk *Biki) GetExchangeTickers() (model.ExchangeTickers, error) {
-	var exchangeTickers model.ExchangeTickers
-	//1.先获取所有交易对
-	pairs, err := bk.GetMarkets()
-	if err != nil {
-		return nil, err
-	}
-	//2. 遍历所有交易对，获取其最新价
-	var waitGroup sync.WaitGroup
-	waitGroup.Add(len(pairs))
-	tickers := make(chan *model.ExchangeTicker, len(pairs))
-
-	for _, pair := range pairs {
-		go func(base, quote string) {
-			_getExchangeTickers(base, quote, tickers)
-			waitGroup.Done()
-		}(pair.Base, pair.Quote)
-	}
-
-	waitGroup.Wait()
-	close(tickers)
-
-	for v := range tickers {
-		//美元
-		if v.MarketPair.Base == "USDT" {
-			v.LastUSD = v.Last
-		} else {
-			if rate, exist := exchangeRate.Load(v.MarketPair.Base); exist == true {
-				r := rate.(float64)
-				v.LastUSD = r * v.Last
-			}
-		}
-		exchangeTickers = append(exchangeTickers, v)
-	}
-	return exchangeTickers, nil
-}
-
-func _getExchangeTickers(base, quote string, tickerts chan<- *model.ExchangeTicker) {
-	url := RestHost + "open/api/get_ticker?symbol=" + getSymbol(base, quote)
-	log.Debugf("url:%s", url)
-	resp, err := http.Get(url)
-	if err != nil {
-		log.Debugf(err)
-	}
-	body, err := ioutil.ReadAll(resp.Body)
-	log.Debug("%v", string(body))
-	if err != nil {
-		log.Debugf(err)
-	}
-	//基础货币是美元
-	//将虚拟货币汇率加入到exchangeMap中
-	if strings.ToUpper(base) == "USDT" {
-		if _, exist := exchangeRate.Load(strings.ToUpper(quote)); exist == false {
-			exchangeRate.Store(strings.ToUpper(quote), gjson.ParseBytes(body).Get("data.last").Float())
-		}
-	}
-	tickerts <- &model.ExchangeTicker{
-		MarketPair:         model.MarketPairInfo{Base: strings.ToUpper(base), Quote: strings.ToUpper(quote)},
-		Vol:                gjson.ParseBytes(body).Get("data.vol").Float(),  // 成交量
-		Last:               gjson.ParseBytes(body).Get("data.last").Float(), // 最新价格
-		LastUSD:            0,                                               // 最新价格折换成美元
-		PriceChangePercent: gjson.ParseBytes(body).Get("data.rose").Float(), //涨幅
-		Time:               time.Now(),
-	}
-}
-
-/**
 获取k线
  */
 func (bk *Biki) GetRecords(base, quote, period string) ([]model.Record, error) {
@@ -329,4 +265,47 @@ func (bk *Biki) GetRecords(base, quote, period string) ([]model.Record, error) {
 	}
 
 	return records, nil
+}
+
+
+/**
+获取当前平台所有交易额(从数据库获取)
+*/
+func (bb *Biki) GetExchangeAmountFormDb() (*data.ExchangeAmount, error) {
+	var tradeDatas []*data.ExchangeTicker
+	var amountUsd float64 = 0
+	var amountCny float64 = 0
+	s, c := common.Connect(DbPair, "biki", "local")
+	defer s.Close()
+	err := c.Find(bson.M{}).All(&tradeDatas)
+	if err != nil {
+		log.Debug("error:%s", err)
+		return nil, err
+	}
+	for _, tradeData := range tradeDatas {
+		amountUsd += tradeData.AmountUsd
+		amountCny += tradeData.AmountCny
+	}
+	exchangeAmount := &data.ExchangeAmount{
+		Platform: PlatForm,
+		TotalUsd: amountUsd,
+		TotalCny: amountCny,
+	}
+	return exchangeAmount, nil
+}
+
+/**
+交易所所有交易对及其价格（从数据库获取）
+完全没问题
+*/
+func (bb *Biki) GetExchangeTickersFromDb() ([]*data.ExchangeTicker, error) {
+	var exchangeTicker []*data.ExchangeTicker
+	s, c := common.Connect(DbPair, "biki", "local")
+	defer s.Close()
+	err := c.Find(bson.M{}).All(&exchangeTicker)
+	if err != nil {
+		log.Debug("error:%s", err)
+		return nil, err
+	}
+	return exchangeTicker, nil
 }

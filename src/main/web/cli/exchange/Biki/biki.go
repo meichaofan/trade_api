@@ -66,7 +66,7 @@ ETH - USDT
 TRX - USDT
 */
 func initCnyUsdRate(rate chan<- float64) {
-	rate <- common.CalRate("cny")
+	rate <- common.CnyUsdRate
 }
 
 func (biki Biki) GetRate(quote, base string) float64 {

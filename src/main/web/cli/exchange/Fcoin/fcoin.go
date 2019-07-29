@@ -33,7 +33,7 @@ func (c Fcoin) Name() string {
 
 //虚拟货币 -- 美元 汇率
 func (c Fcoin) GetRate(quote, base string) float64 {
-	symbol := strings.ToUpper(quote + base)
+	symbol := strings.ToLower(quote + base)
 	if rate, ok := rateCoin.Load(symbol); ok {
 		r := rate.(float64)
 		return r
@@ -41,19 +41,18 @@ func (c Fcoin) GetRate(quote, base string) float64 {
 	url := ApiHost + "/market/ticker/" + symbol
 	content := common.HttpGet(url)
 	ret := gjson.ParseBytes(content)
-	if ret.Exists() {
-		//btc - usdt
-		//eth - usdt
-		rate := ret.Get("last").Float()
-		rateCoin.Store(symbol, rate)
+	status := ret.Get("status").Int()
+	if status == 0 {
+		rate := ret.Get("data.ticker").Array()[0].Float()
+		defer rateCoin.Store(symbol, rate)
 		return rate
 	}
-	return 1;
+	return 0
 }
 
 func (c Fcoin) PairHandler() []*data.ExchangeTicker {
 	var exchangeTickers []*data.ExchangeTicker
-	url := ApiHost + "/api/spot/v3/instruments/ticker"
+	url := ApiHost + "/market/all-tickers"
 	content := common.HttpGet(url)
 	ret := gjson.ParseBytes(content)
 	ret.Get("tickers").ForEach(func(key, value gjson.Result) bool {
@@ -83,8 +82,8 @@ func (c Fcoin) PairHandler() []*data.ExchangeTicker {
 			Symbol:             strings.ToUpper(symbol),
 			Quote:              strings.ToUpper(quote),
 			Base:               strings.ToUpper(base),
-			Volume:             value.Get("base_volume_24h").Float(),
-			Amount:             value.Get("quote_volume_24h").Float(),
+			AmountQuote:        value.Get("ticker").Array()[9].Float(),
+			AmountBase:         value.Get("ticker").Array()[10].Float(),
 			Last:               last,
 			Time:               timeStr,
 			PriceChangePercent: pcg,
@@ -93,20 +92,17 @@ func (c Fcoin) PairHandler() []*data.ExchangeTicker {
 		//汇率
 		if strings.ToUpper(base) == "USDT" {
 			exchangeTicker.LastUsd = exchangeTicker.Last
-			exchangeTicker.AmountUsd = exchangeTicker.Amount
+			exchangeTicker.AmountUsd = exchangeTicker.AmountBase
 		} else {
 			rate := c.GetRate(base, "USDT")
 			exchangeTicker.LastUsd = exchangeTicker.Last * rate
-			exchangeTicker.AmountUsd = exchangeTicker.Amount * rate
+			exchangeTicker.AmountUsd = exchangeTicker.AmountBase * rate
 		}
+		exchangeTicker.AmountCny = exchangeTicker.AmountUsd * common.CnyUsdRate
+		exchangeTicker.LastCny = exchangeTicker.LastUsd * common.CnyUsdRate
 		exchangeTickers = append(exchangeTickers, exchangeTicker)
 		return true
 	})
 
 	return exchangeTickers
-}
-
-func (c Fcoin) AmountHandler() []*data.TradeData {
-	var tradeDatas []*data.TradeData
-	return tradeDatas
 }

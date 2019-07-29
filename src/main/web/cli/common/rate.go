@@ -9,6 +9,12 @@ import (
 各国货币和美元汇率
 */
 
+func init() {
+	CnyUsdRate = CalRate("cny")
+}
+
+var CnyUsdRate float64
+
 const (
 	//各国货币和美元之间汇率
 	RateApi = "http://49.51.46.37:14000/v1/getexchange"
