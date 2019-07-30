@@ -5,7 +5,6 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"sync"
 	"trade_api/src/main/web/cli/common"
-	_ "trade_api/src/main/web/cli/common"
 	"trade_api/src/main/web/cli/data"
 	"trade_api/src/main/web/cli/exchange"
 	"trade_api/src/main/web/cli/exchange/Bibox"
